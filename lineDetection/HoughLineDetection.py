@@ -2,14 +2,14 @@
 @file hough_lines.py
 @brief This program demonstrates line finding with the Hough transform
 """
-import sys
 import math
+import os
 import cv2 as cv
 import numpy as np
-def main(argv):
+def main(img):
     
     # Loads an image
-    src = cv.imread("lineDetection\essaiPlaque.jpg", cv.IMREAD_GRAYSCALE)
+    src = cv.imread(img, cv.IMREAD_GRAYSCALE)
     # Check if image is loaded fine
     if src is None:
         print ('Error opening image!')
@@ -34,7 +34,7 @@ def main(argv):
             y0 = b * rho
             pt1 = (int(x0 + 1000*(-b)), int(y0 + 1000*(a)))
             pt2 = (int(x0 - 1000*(-b)), int(y0 - 1000*(a)))
-            cv.line(cdst, pt1, pt2, (0,0,255), 3, cv.LINE_AA)
+            cv.line(cdst, pt1, pt2, (0,0,255), 1, cv.LINE_AA)
     
     
     linesP = cv.HoughLinesP(dst, 1, np.pi / 180, 50, None, 50, 10)
@@ -42,7 +42,7 @@ def main(argv):
     if linesP is not None:
         for i in range(0, len(linesP)):
             l = linesP[i][0]
-            cv.line(cdstP, (l[0], l[1]), (l[2], l[3]), (0,0,255), 3, cv.LINE_AA)
+            cv.line(cdstP, (l[0], l[1]), (l[2], l[3]), (0,0,255), 1, cv.LINE_AA)
     
     cv.imshow("Source", src)
     cv.imshow("Detected Lines (in red) - Standard Hough Line Transform", cdst)
@@ -50,6 +50,10 @@ def main(argv):
     
     cv.waitKey()
     return 0
-    
+     
 if __name__ == "__main__":
-    main(sys.argv[1:])
+    listOfFiles = os.listdir("lineDetection\dataset")
+    for f in listOfFiles:
+        if ".png" in f or ".jpg" in f:
+            main("lineDetection\\dataset\\"+f)
+        
