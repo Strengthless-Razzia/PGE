@@ -9,7 +9,7 @@ import numpy as np
 def main(argv):
     
     # Loads an image
-    src = cv.imread("lineDetection\sudoku.jpg", cv.IMREAD_GRAYSCALE)
+    src = cv.imread("lineDetection\essaiPlaque.jpg", cv.IMREAD_GRAYSCALE)
     # Check if image is loaded fine
     if src is None:
         print ('Error opening image!')
