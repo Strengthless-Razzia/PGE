@@ -6,6 +6,19 @@ import math
 import os
 import cv2 as cv
 import numpy as np
+
+def getCenter(l):
+    
+    x1 = l[0]
+    y1 = l[1]
+    x2 = l[2]
+    y2 = l[3]
+    centerX = (x2+x1)/2
+    centerY = (y2+y1)/2
+    
+    return (int(centerX),int(centerY))
+
+
 def main(img):
     
     # Loads an image
@@ -43,17 +56,33 @@ def main(img):
         for i in range(0, len(linesP)):
             l = linesP[i][0]
             cv.line(cdstP, (l[0], l[1]), (l[2], l[3]), (0,0,255), 1, cv.LINE_AA)
-    
+            
+
+
+
     cv.imshow("Source", src)
     cv.imshow("Detected Lines (in red) - Standard Hough Line Transform", cdst)
     cv.imshow("Detected Lines (in red) - Probabilistic Line Transform", cdstP)
     
     cv.waitKey()
-    return 0
-     
+    return linesP
+
+listOfLines = {}
+
 if __name__ == "__main__":
     listOfFiles = os.listdir("lineDetection\dataset")
     for f in listOfFiles:
         if ".png" in f or ".jpg" in f:
-            main("lineDetection\\dataset\\"+f)
-        
+            listOfLines[f] = main("lineDetection\\dataset\\"+f)
+    print(listOfLines)
+    files = listOfLines.keys()
+    for currentFile in files:
+        for currentLine in listOfLines[currentFile]:
+            currentLine =currentLine[0]
+            print(str(currentFile) + " : " + str(currentLine))
+            ctr = getCenter(currentLine)
+            src = cv.imread("lineDetection\\dataset\\"+currentFile)
+            cv.line(src, [currentLine[0],currentLine[1]], [currentLine[2],currentLine[3]], (0,0,255), 1, cv.LINE_AA)
+            cv.circle(src,ctr,2,(0,255,0))
+            cv.imshow("LineDisplay",src)
+            cv.waitKey()
