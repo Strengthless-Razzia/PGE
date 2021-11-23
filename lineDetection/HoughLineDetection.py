@@ -103,7 +103,54 @@ def displayIndividualLinesOfImage(img,lines):
         cv.circle(src,ctr,2,(0,255,0))
         cv.imshow("LineDisplay",src)
         cv.waitKey()
-    
+
+def calcVector(l):
+    """
+    in :
+        array {x1,y1,x2,y2}
+    out:
+        tuple (a,b) from ax+b 
+    Calcul de l'expression mathématique de la ligne ax+b 
+    """
+    #Calc direction of line
+    a = (l[3]-l[1])/(l[2]-l[0])
+    #Calc position in 0
+    b = l[1]-l[0]*a 
+    return [a,b]
+
+def mergeTwoLines(l1, l2):
+    """
+    in : 
+        l1 : array {x1,y1,x2,y2}
+        l2 : array {x1,y1,x2,y2}
+    out : 
+        l  : array {x1,y1,x2,y2}
+    Create a new line using two of them
+    """
+    pass
+
+def mergeSimilarLines(lines, threshold_a,threshold_b):
+    """
+    in :
+        lines : array [N, 4] de lignes 
+    out:
+        mergedLines : array [l, 4] de lignes
+    Rassemble les lignes similaire 
+    """
+    [N,tmp] = lines.shape
+    listOfExpressions = np.zeros([N,2])
+    newList = np.array([])
+    for i in range(N):
+        listOfExpressions[i] =  calcVector(lines[i])
+    pass
+    for i in range(N):
+        for j in range(i,N):
+            if j != i:
+                if listOfExpressions[i][0] - listOfExpressions[j][0] <= threshold_a:
+                    if listOfExpressions[i][1] - listOfExpressions[j][1] <= threshold_b:
+                        #TODO Match'em & remove the j one from list? 
+                        pass
+
 
 if __name__ == "__main__":
     #For all img files in directory dataset
@@ -112,9 +159,9 @@ if __name__ == "__main__":
         if ".png" in f or ".jpg" in f:
             
             imgPath = "lineDetection\\dataset\\"+f
-            
+
             lines = getHoughLines(imgPath)
-            displayImgWithLines(imgPath, lines, "Display")
-            displayIndividualLinesOfImage(imgPath,lines)
-    
-    
+            #displayImgWithLines(imgPath, lines, "Display")
+            #displayIndividualLinesOfImage(imgPath,lines)
+            mergeSimilarLines(lines)
+            input()
