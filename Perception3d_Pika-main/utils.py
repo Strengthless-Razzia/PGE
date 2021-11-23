@@ -129,8 +129,8 @@ def select_segments():
     # See on_click(event) function.
     # ----------------------------------------------------
     # Read left/right/images
-    image = mpimg.imread('data/image_2.png')
-    image_2 = mpimg.imread('data/image_1.png')
+    image = mpimg.imread('./data/plaque=2_position=(1000.0, 8000.0, -3000.0)_rotation=(60.0, 0.0, 15.0)_date=2021-11-22_16-43-29.png')
+    image_2 = mpimg.imread('./data/plaque=3_position=(0.0, 4900.0, -3000.0)_rotation=(60.0, 0.0, 15.0)_date=2021-11-22_16-35-15.png')
 
     # Plot the model
     fig1 = plt.figure(1)
