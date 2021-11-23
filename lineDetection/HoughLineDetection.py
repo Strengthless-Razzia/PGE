@@ -113,7 +113,10 @@ def calcVector(l):
     Calcul de l'expression mathématique de la ligne ax+b 
     """
     #Calc direction of line
-    a = (l[3]-l[1])/(l[2]-l[0])
+    if l[2]-l[0] == 0:
+        a = 10000
+    else:
+        a = (l[3]-l[1])/(l[2]-l[0])
     #Calc position in 0
     b = l[1]-l[0]*a 
     return [a,b]
@@ -157,12 +160,20 @@ def mergeSimilarLines(lines, threshold_a,threshold_b):
         listOfExpressions[i] =  calcVector(lines[i])
     
     for i in range(N):
+        found = False
         for j in range(i,N):
             if j != i:
                 if abs(listOfExpressions[i][0] - listOfExpressions[j][0]) <= threshold_a and abs(listOfExpressions[i][1] - listOfExpressions[j][1]) <= threshold_b:
-
-                    newLine = mergeTwoLines(lines[i],lines[j])
-                    newList = np.vstack([newList,newLine]) 
+                    if not found:
+                        newLine = mergeTwoLines(lines[i],lines[j])
+                        newList = np.vstack([newList,newLine])
+                    else:
+                        newLine = mergeTwoLines(newList[-1],lines[j])
+                        newList[-1] = newLine
+                    found = True
+        
+        if not found:
+            newList = np.vstack([newList,lines[i]])
     return newList
 
 
@@ -171,14 +182,21 @@ if __name__ == "__main__":
     listOfFiles = os.listdir("lineDetection\dataset")
     for f in listOfFiles:
         if ".png" in f or ".jpg" in f:
-            
+            a_t = 5
+            b_t = 5
             imgPath = "lineDetection\\dataset\\"+f
 
             lines = getHoughLines(imgPath)
             #displayImgWithLines(imgPath, lines, "Display")
             
-            mergedList=mergeSimilarLines(lines,2,2)
+            old = lines.shape
+            mergedList=mergeSimilarLines(lines,a_t,b_t)
+            
+            new = mergedList.shape
+            while new!= old:
+                old = mergedList.shape
+                mergedList=mergeSimilarLines(mergedList,a_t,b_t)
+                new = mergedList.shape
+                print(str(old)+":"+str(new))
+                
             displayIndividualLinesOfImage(imgPath,mergedList)
-
-        
-    print(mergedList)
