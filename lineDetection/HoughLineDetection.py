@@ -99,7 +99,7 @@ def displayIndividualLinesOfImage(img,lines):
         line = line
         ctr = getCenter(line)
         src = cv.imread(img)
-        cv.line(src, [line[0],line[1]], [line[2],line[3]], (0,0,255), 1, cv.LINE_AA)
+        cv.line(src, [int(line[0]),int(line[1])], [int(line[2]),int(line[3])], (0,0,255), 1, cv.LINE_AA)
         cv.circle(src,ctr,2,(0,255,0))
         cv.imshow("LineDisplay",src)
         cv.waitKey()
@@ -127,7 +127,17 @@ def mergeTwoLines(l1, l2):
         l  : array {x1,y1,x2,y2}
     Create a new line using two of them
     """
-    pass
+    pts = np.zeros([4,2])
+    pts[0] = [l1[0],l1[1]]
+    pts[1] = [l1[2],l1[3]]
+    pts[2] = [l2[0],l2[1]]
+    pts[3] = [l2[2],l2[3]]
+    
+    x = [l1[0],l1[2],l2[0],l2[2]]
+    pointLeft  = x.index(min(x))
+    pointRight = x.index(max(x))
+    return np.append(pts[pointLeft],pts[pointRight])
+    
 
 def mergeSimilarLines(lines, threshold_a,threshold_b):
     """
@@ -137,19 +147,23 @@ def mergeSimilarLines(lines, threshold_a,threshold_b):
         mergedLines : array [l, 4] de lignes
     Rassemble les lignes similaire 
     """
+    
+
+    
     [N,tmp] = lines.shape
     listOfExpressions = np.zeros([N,2])
-    newList = np.array([])
+    newList = np.empty([0,4])
     for i in range(N):
         listOfExpressions[i] =  calcVector(lines[i])
-    pass
+    
     for i in range(N):
         for j in range(i,N):
             if j != i:
-                if listOfExpressions[i][0] - listOfExpressions[j][0] <= threshold_a:
-                    if listOfExpressions[i][1] - listOfExpressions[j][1] <= threshold_b:
-                        #TODO Match'em & remove the j one from list? 
-                        pass
+                if abs(listOfExpressions[i][0] - listOfExpressions[j][0]) <= threshold_a and abs(listOfExpressions[i][1] - listOfExpressions[j][1]) <= threshold_b:
+
+                    newLine = mergeTwoLines(lines[i],lines[j])
+                    newList = np.vstack([newList,newLine]) 
+    return newList
 
 
 if __name__ == "__main__":
@@ -162,6 +176,9 @@ if __name__ == "__main__":
 
             lines = getHoughLines(imgPath)
             #displayImgWithLines(imgPath, lines, "Display")
-            #displayIndividualLinesOfImage(imgPath,lines)
-            mergeSimilarLines(lines)
-            input()
+            
+            mergedList=mergeSimilarLines(lines,2,2)
+            displayIndividualLinesOfImage(imgPath,mergedList)
+
+        
+    print(mergedList)
