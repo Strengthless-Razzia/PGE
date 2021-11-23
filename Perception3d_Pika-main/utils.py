@@ -90,8 +90,8 @@ def select_segments():
     #                ...
     #        [x1, y1, z1, x2, y2, z2],
     #        [x1, y1, z1, x2, y2, z2]]
-    model_points_3DRo = np.loadtxt("data/Plaque_2.xyz", dtype=float)
-    model_edges = np.loadtxt("data/Plaque_2.edges", dtype=int)
+    model_points_3DRo = np.loadtxt("data/Plaque_3.xyz", dtype=float)
+    model_edges = np.loadtxt("data/Plaque_3.edges", dtype=int)
 
     XYZ1_Ro = model_points_3DRo[model_edges[:, 0]]
     XYZ2_Ro = model_points_3DRo[model_edges[:, 1]]
