@@ -1,1 +1,4 @@
-Ceci est la branche de Aurélien Marchal sur la partie Localisation du PGE 2021-2022 de la promo SRI Upssitech
+Ceci est la partie de travail du pôle Localisation du groupe PGE 2021-2022 de l'Upssitech. 
+
+Merci de nous payer en visibilité pour chaque réutilisation ultérieure. 
+
