@@ -7,7 +7,7 @@ import numpy as np
 from localisation import calculate_normal_vector
 
 line_color = ['cyan', 'magenta', 'yellow', 'red', 'green', 'blue']
-nb_segments = 5
+nb_segments = 4
 iPick = 0
 iClick = 0
 
@@ -90,8 +90,8 @@ def select_segments():
     #                ...
     #        [x1, y1, z1, x2, y2, z2],
     #        [x1, y1, z1, x2, y2, z2]]
-    model_points_3DRo = np.loadtxt("data/Plaque_1.xyz", dtype=float)
-    model_edges = np.loadtxt("data/Plaque_1.edges", dtype=int)
+    model_points_3DRo = np.loadtxt("data/Plaque_2.xyz", dtype=float)
+    model_edges = np.loadtxt("data/Plaque_2.edges", dtype=int)
 
     XYZ1_Ro = model_points_3DRo[model_edges[:, 0]]
     XYZ2_Ro = model_points_3DRo[model_edges[:, 1]]
@@ -99,8 +99,8 @@ def select_segments():
     X1_Ro, Y1_Ro, Z1_Ro = XYZ1_Ro[:, 0], XYZ1_Ro[:, 1], XYZ1_Ro[:, 2]
     X2_Ro, Y2_Ro, Z2_Ro = XYZ2_Ro[:, 0], XYZ2_Ro[:, 1], XYZ2_Ro[:, 2]
 
-    model_points_3DRo_final = np.loadtxt("data/Plaque_2.xyz", dtype=float)
-    model_edges_final = np.loadtxt("data/Plaque_2.edges", dtype=int)
+    model_points_3DRo_final = np.loadtxt("data/Plaque_1.xyz", dtype=float)
+    model_edges_final = np.loadtxt("data/Plaque_1.edges", dtype=int)
     XYZ1_Ro = model_points_3DRo_final[model_edges_final[:, 0]]
     XYZ2_Ro = model_points_3DRo_final[model_edges_final[:, 1]]
     model3D_Ro_final = np.concatenate([XYZ1_Ro, XYZ2_Ro], axis=1)
@@ -129,8 +129,8 @@ def select_segments():
     # See on_click(event) function.
     # ----------------------------------------------------
     # Read left/right/images
-    image = mpimg.imread('data/image_1.png')
-    image_2 = mpimg.imread('data/image_2.png')
+    image = mpimg.imread('data/image_2.png')
+    image_2 = mpimg.imread('data/image_1.png')
 
     # Plot the model
     fig1 = plt.figure(1)

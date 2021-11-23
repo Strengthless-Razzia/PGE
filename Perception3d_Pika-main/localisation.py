@@ -12,7 +12,7 @@ import matTools
 import utils
 
 EPS = 0.5
-nb_segments = 5
+nb_segments = 4
 
 
 def transform_and_draw_model(edges_Ro, intrinsic, extrinsic, fig_axis):
