@@ -135,6 +135,7 @@ def select_segments():
     # Plot the model
     fig1 = plt.figure(1)
     ax1, lines = plot_3d_model(model3D_Ro, fig1)
+    ax1.set_zlim(-20,20)
     fig1.canvas.mpl_connect('pick_event', on_pick)  # Listen to mouse click event within figure 1
     plt.show(block=False)
 
