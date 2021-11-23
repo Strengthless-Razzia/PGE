@@ -182,24 +182,21 @@ if __name__ == "__main__":
     listOfFiles = os.listdir("lineDetection\dataset")
     for f in listOfFiles:
         if ".png" in f or ".jpg" in f:
-            
+            a_t = 5
+            b_t = 5
             imgPath = "lineDetection\\dataset\\"+f
 
             lines = getHoughLines(imgPath)
             #displayImgWithLines(imgPath, lines, "Display")
             
             old = lines.shape
-            
-            mergedList=mergeSimilarLines(lines,2,2)
+            mergedList=mergeSimilarLines(lines,a_t,b_t)
             
             new = mergedList.shape
             while new!= old:
                 old = mergedList.shape
-                mergedList=mergeSimilarLines(mergedList,2,2)
+                mergedList=mergeSimilarLines(mergedList,a_t,b_t)
                 new = mergedList.shape
                 print(str(old)+":"+str(new))
                 
             displayIndividualLinesOfImage(imgPath,mergedList)
-
-        
-    print(mergedList)
