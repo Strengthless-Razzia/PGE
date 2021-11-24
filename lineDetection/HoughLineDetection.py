@@ -21,7 +21,7 @@ def getCenter(l):
     y2 = l[3]
     centerX = (x2+x1)/2
     centerY = (y2+y1)/2
-    return (int(centerX),int(centerY))
+    return [int(centerX),int(centerY)]
 
 
 
@@ -153,7 +153,6 @@ def mergeSimilarLines(lines, threshold_a,threshold_b):
     """
     
 
-    
     [N,tmp] = lines.shape
     listOfExpressions = np.zeros([N,2])
     mergedLines = np.empty([0,4])
@@ -235,6 +234,65 @@ def removeSimilarLines(lines,threshold):
             cleanedLines = np.vstack([cleanedLines,lines[i]])
     return cleanedLines
 
+def getDistanceFromCenter(l,c):
+    """
+    in :
+        l : {x1,y1,x2,y2}
+        c : center of image {x,y}
+    out:
+        dist : float de distance de la ligne/centre
+    
+    Calcule la distance du centre
+    """
+    cL = getCenter(l)
+    dist = abs(c[0] - cL[0]) + abs(c[1] - cL[1])
+    return dist
+
+def calcBarycentre(lines):
+    """
+    in :
+        lines : array [N, 4] de lignes
+    out:
+        c : barycentre [x,y]
+    
+    Calcule le barycentre des lignes
+    """
+
+    [N,tmp] = lines.shape
+    centers = np.empty([N,2])
+    for i in range(N):
+        centers[i] = getCenter(lines[i])
+    return np.mean(centers, axis=0)
+
+def chooseTheBestCandidates(lines, nbOfCandidates, img):
+    """
+    in :
+        lines : array [N, 4] de lignes
+        nbOfCandidates : nombre de candidats au PNL voulus 
+        img : Path vers l'image a utiliser, nécessaire pour avoir le milieu
+    out:
+        bestLines : array [nbOfCandidates, 4] de lignes
+    Retourne les nbOfCandidates lignes les plus au centre, les plus probables d'être de la plaque
+    """
+    src = cv.imread(img,cv.IMREAD_GRAYSCALE)
+    [h,w] = src.shape
+    ctr = calcBarycentre(lines)
+    [N,tmp] = lines.shape
+    if N < nbOfCandidates:
+        nbOfCandidates = N
+    listOfDistances = np.empty(N)
+    results = np.empty([nbOfCandidates,4])
+    for i in range(N):
+        listOfDistances[i] = getDistanceFromCenter(lines[i], ctr)
+
+    for i in range(nbOfCandidates):
+
+        indexOfMin = np.where(listOfDistances == min(listOfDistances))[0][0]
+        results[i] = lines[indexOfMin]
+        lines = np.delete(lines,indexOfMin,axis=0)
+        listOfDistances = np.delete(listOfDistances,indexOfMin)
+    return results
+
 if __name__ == "__main__": 
     #For all img files in directory dataset
     listOfFiles = os.listdir("lineDetection\dataset")
@@ -255,14 +313,18 @@ if __name__ == "__main__":
                 old = mergedList.shape
                 mergedList=mergeSimilarLines(mergedList,a_t,b_t)
                 new = mergedList.shape
-                print(str(old)+":"+str(new))
             cleanedList = removeSimilarLines(mergedList,10)
             displayImgWithLines(imgPath, lines, "Original")
+            
+            print(imgPath)
             print("lines shape" + str(lines.shape))
             print("merge shape" + str(mergedList.shape))
             print("clean shape" + str(cleanedList.shape))
-            print(lines)
-            print(mergedList)
+
             displayImgWithLines(imgPath, mergedList, "Merged")
             displayImgWithLines(imgPath, cleanedList, "Cleaned")
             displayIndividualLinesOfImage(imgPath,cleanedList)
+            bestCandidates = chooseTheBestCandidates(cleanedList,4,imgPath)
+            displayImgWithLines(imgPath, bestCandidates, "Best")
+            print("Best  shape" + str(bestCandidates .shape))
+            displayIndividualLinesOfImage(imgPath,bestCandidates)
