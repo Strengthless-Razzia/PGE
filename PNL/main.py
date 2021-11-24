@@ -3,12 +3,12 @@ from utils import get_calib_params
 from manualLineDetection.manual_line_detection import select_segments
 
 
-edges_file_path = '../data_plaques/Plaque_1.edges'
-points_file_path = '../data_plaques/Plaque_1.xyz'
-image_path = '../Photos/plaque=1_position=(1000.0, 8000.0, -3000.0)_rotation=(60.0, 0.0, 15.0)_date=2021-11-22_16-44-13.png'
+edges_file_path = './data_plaques/Plaque_3.edges'
+points_file_path = './data_plaques/Plaque_3.xyz'
+image_path = './Photos/257766534_1338638413221702_7883980734974370765_n.jpg'
 nb_segments = 4
 
-intrinsic_matrix = get_calib_params('../Calibration/calib_simulation/calibration_parameters.txt')
+intrinsic_matrix = get_calib_params('./Calibration/calib_simulation/calibration_parameters.txt')
 
 if __name__ == '__main__':
     
