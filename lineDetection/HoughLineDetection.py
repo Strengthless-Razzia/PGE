@@ -76,10 +76,11 @@ def displayImgWithLines(img, lines, title):
         print ('Error opening image!')
         return -1   
     src = cv.cvtColor(src,cv.COLOR_GRAY2RGB)
+
     if lines is not None:
         for i in range(0, len(lines)):
             l = lines[i]
-            cv.line(src, (l[0], l[1]), (l[2], l[3]), (0,0,255), 1, cv.LINE_AA)
+            cv.line(src, (int(l[0]), int(l[1])), (int(l[2]), int(l[3])), (0,0,255), 1, cv.LINE_AA)
     cv.imshow(title,src)
     cv.waitKey()
 
@@ -99,7 +100,7 @@ def displayIndividualLinesOfImage(img,lines):
         line = line
         ctr = getCenter(line)
         src = cv.imread(img)
-        cv.line(src, [int(line[0]),int(line[1])], [int(line[2]),int(line[3])], (0,0,255), 1, cv.LINE_AA)
+        cv.line(src, (int(line[0]),int(line[1])), (int(line[2]),int(line[3])), (0,0,255), 1, cv.LINE_AA)
         cv.circle(src,ctr,2,(0,255,0))
         cv.imshow("LineDisplay",src)
         cv.waitKey()
@@ -155,34 +156,91 @@ def mergeSimilarLines(lines, threshold_a,threshold_b):
     
     [N,tmp] = lines.shape
     listOfExpressions = np.zeros([N,2])
-    newList = np.empty([0,4])
+    mergedLines = np.empty([0,4])
     for i in range(N):
         listOfExpressions[i] =  calcVector(lines[i])
     
-    for i in range(N):
+    i = 0
+    while i < N:
         found = False
-        for j in range(i,N):
+        j = i
+        while j < N:
             if j != i:
+                #Si les deux lignes sont suffisamment proches 
                 if abs(listOfExpressions[i][0] - listOfExpressions[j][0]) <= threshold_a and abs(listOfExpressions[i][1] - listOfExpressions[j][1]) <= threshold_b:
+                    #Si on en a pas déjà rajouté une
                     if not found:
                         newLine = mergeTwoLines(lines[i],lines[j])
-                        newList = np.vstack([newList,newLine])
-                    else:
-                        newLine = mergeTwoLines(newList[-1],lines[j])
-                        newList[-1] = newLine
+                        mergedLines = np.vstack([mergedLines,newLine])
+                    else: 
+                        newLine = mergeTwoLines(mergedLines[-1],lines[j])   #Si on en a déjà rajouté une, on la merge avec la nouvelle ligne
+                        mergedLines[-1] = newLine
                     found = True
+                    lines = np.delete(lines, j,axis=0)
+                    listOfExpressions = np.delete(listOfExpressions, j,axis=0)
+                    [N,tmp] = lines.shape
+            j += 1
         
         if not found:
-            newList = np.vstack([newList,lines[i]])
-    return newList
+            mergedLines = np.vstack([mergedLines,lines[i]])
+        i += 1
+    return mergedLines
 
+def linesAreSimilar(l1,l2,t):
+    """
+    in : 
+        l1 : array {x1,y1,x2,y2}
+        l2 : array {x1,y1,x2,y2}
+        t  : threshold de détection
+    out : 
+        isSimilar : Bool
+    Retourne vrai si les deux lignes en entrée sont similaires selon le seuil t
+    """
+    pts1a = [l1[0],l1[1]]
+    pts1b = [l1[2],l1[3]]
+    pts2a = [l2[0],l2[1]]
+    pts2b = [l2[2],l2[3]]
 
-if __name__ == "__main__":
+    #si pt1a = pt2a & pt1b = pt2b 
+    if abs(pts1a[0] - pts2a[0]) + abs(pts1a[1] - pts2a[1]) <= t:
+        if abs(pts1b[0] - pts2b[0]) + abs(pts1b[1] - pts2b[1]) <= t:
+            return True
+    #si pt1a = pt2b et pt1b = pt2a
+    if abs(pts1a[0] - pts2b[0]) + abs(pts1a[1] - pts2b[1]) <= t:
+        if abs(pts1b[0] - pts2a[0]) + abs(pts1b[1] - pts2a[1]) <= t:
+            return True
+    return False
+    
+
+def removeSimilarLines(lines,threshold):
+    """
+    in :
+        lines : array [N, 4] de lignes 
+    out:
+        cleanedLines : array [l, 4] de lignes
+    Supprime les doublons 
+    """
+    [N,tmp] = lines.shape
+    cleanedLines = np.empty([0,4])
+    
+    for i in range(N):
+        stop = False
+        for j in range(i,N):
+            if i != j:
+                #Si les deux points sont suffisamment similaire
+                if linesAreSimilar(lines[i],lines[j],threshold):
+                    stop = True
+                    break
+        if not stop: #Si aucune autre ligne n'est similaire on sauvegarde la ligne
+            cleanedLines = np.vstack([cleanedLines,lines[i]])
+    return cleanedLines
+
+if __name__ == "__main__": 
     #For all img files in directory dataset
     listOfFiles = os.listdir("lineDetection\dataset")
     for f in listOfFiles:
         if ".png" in f or ".jpg" in f:
-            a_t = 5
+            a_t = 0.5
             b_t = 5
             imgPath = "lineDetection\\dataset\\"+f
 
@@ -198,5 +256,13 @@ if __name__ == "__main__":
                 mergedList=mergeSimilarLines(mergedList,a_t,b_t)
                 new = mergedList.shape
                 print(str(old)+":"+str(new))
-                
-            displayIndividualLinesOfImage(imgPath,mergedList)
+            cleanedList = removeSimilarLines(mergedList,10)
+            displayImgWithLines(imgPath, lines, "Original")
+            print("lines shape" + str(lines.shape))
+            print("merge shape" + str(mergedList.shape))
+            print("clean shape" + str(cleanedList.shape))
+            print(lines)
+            print(mergedList)
+            displayImgWithLines(imgPath, mergedList, "Merged")
+            displayImgWithLines(imgPath, cleanedList, "Cleaned")
+            displayIndividualLinesOfImage(imgPath,cleanedList)
