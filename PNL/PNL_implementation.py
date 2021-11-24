@@ -5,14 +5,125 @@ Created on Mon Nov 11 00:35:00 2019
 @author: thgerm
 """
 
+import matplotlib.image as mpimg
 import matplotlib.pyplot as plt
 import numpy as np
 
 import matTools
-import utils
 
-EPS = 0.5
-nb_segments = 4
+
+class PNL:
+    EPS = 0.5
+    def __init__(self, nb_segments, pick_lines_Ro, normal_vectors, model3D_Ro, intrinsic_matrix,) -> None:
+
+        self.nb_segments = nb_segments
+        self.pick_lines_Ro = pick_lines_Ro
+        self.normal_vectors = normal_vectors
+        self.model3D_Ro = model3D_Ro
+        self.intrinsic_matrix = intrinsic_matrix
+            
+
+        
+        self.param_solution = np.array([-2.1, 0.7, 2.7, 3.1, 1.3, 18.0])
+        self.extrinsic_matrix = matTools.construct_matrix_from_vec(self.param_solution)
+
+        self.pick_lines_Rc = np.copy(self.pick_lines_Ro)
+
+        self.pick_lines_Rc[:, [0, 1, 2]] = matTools.transform_point_with_matrix(self.extrinsic_matrix, self.pick_lines_Ro[:, [0, 1, 2]])
+        self.pick_lines_Rc[:, [3, 4, 5]] = matTools.transform_point_with_matrix(self.extrinsic_matrix, self.pick_lines_Ro[:, [3, 4, 5]])
+    
+
+    def run(self, image_path = None):
+
+        initial_error = self.calculate_error()
+        print('Initial criteria : ' + str(initial_error))
+
+        l = 0.0001  # lambda value
+        it = 0
+        while True:
+            J = np.zeros((2 * self.nb_segments, 6))
+            F = np.zeros((2 * self.nb_segments))
+            lig = 0
+
+            self.pick_lines_Rc[:, [0, 1, 2]] = matTools.transform_point_with_matrix(self.extrinsic_matrix, self.pick_lines_Ro[:, [0, 1, 2]])
+            self.pick_lines_Rc[:, [3, 4, 5]] = matTools.transform_point_with_matrix(self.extrinsic_matrix, self.pick_lines_Ro[:, [3, 4, 5]])
+
+            for p in range(self.nb_segments):
+                normal_vector = np.copy(self.normal_vectors[p, [0, 1, 2]])
+                [partial_deriv, crit_X0] = partial_derivatives(normal_vector, self.pick_lines_Rc[p, [0, 1, 2]])
+                J[lig, :] = partial_deriv.T
+                F[lig] = -crit_X0
+                lig = lig + 1
+
+                [partial_deriv, crit_X0] = partial_derivatives(normal_vector, self.pick_lines_Rc[p, [3, 4, 5]])
+                J[lig, :] = partial_deriv.T
+                F[lig] = -crit_X0
+                lig = lig + 1
+
+            JJ = np.dot(J.T, J)
+            for i in range(JJ.shape[0]):
+                JJ[i, i] = JJ[i, i] * (1.0 + l)
+
+            # ********************************************************************* #
+            # A COMPLETER.                                                          #
+            delta_solution = np.dot(np.dot(np.linalg.inv(JJ), J.T), F)    
+            #@ est le produit matriciel                                              #
+            delta_extrinsic = matTools.construct_matrix_from_vec(delta_solution)  #
+            self.extrinsic_matrix = np.dot(delta_extrinsic, self.extrinsic_matrix)
+            print(self.extrinsic_matrix)
+            #dans ce sens sinon ça meurt                                               #
+            # ********************************************************************* #
+
+            self.param_solution = matTools.construct_vec_from_matrix(self.extrinsic_matrix)
+            self.pick_lines_Rc[:, [0, 1, 2]] = matTools.transform_point_with_matrix(self.extrinsic_matrix, self.pick_lines_Ro[:, [0, 1, 2]])
+            self.pick_lines_Rc[:, [3, 4, 5]] = matTools.transform_point_with_matrix(self.extrinsic_matrix, self.pick_lines_Ro[:, [3, 4, 5]])
+
+            new_error = self.calculate_error()
+            if new_error < self.EPS or abs(initial_error - new_error) < 10 ** -10:
+                break
+
+            print('Iteration[' + str(it) + '] : ' + str(new_error))
+            it = it + 1
+            initial_error = new_error
+
+        print('6-tuplet solution : ' + str(self.param_solution))
+        print('Error after convergence : ' + str(new_error))
+
+        if image_path is not None:
+
+            fig4 = plt.figure(4)
+            ax4 = fig4.add_subplot(111)
+            plt.imshow( mpimg.imread(image_path))
+            transform_and_draw_model(self.model3D_Ro[12:], self.intrinsic_matrix, self.extrinsic_matrix, ax4)  # 3D model drawing
+            plt.show(block=True)
+
+        
+
+    def calculate_error(self):
+        # ***************************************************************** #
+        # A COMPLETER.                                                      #
+        # Input:                                                            #
+        #   nb_segments : par defaut 5 = nombre de segments selectionnes    #
+        #   normal_vectors : ndarray[Nx3] - normales aux plans              #
+        #                    d'interpretation des segments selectionnes     #
+        #                    N = nombre de segments                         #
+        #                    3 = coordonnees (X,Y,Z) des normales dans Rc   #
+        #   segments_Rc : ndarray[Nx6] = segments selectionnes dans Ro      #
+        #                 et transformes dans Rc                            #
+        #                 N = nombre de segments                            #
+        #                 6 = (X1, Y1, Z1, X2, Y2, Z2) des points P1 et     #
+        #                 P2 des aretes transformees dans Rc                #
+        # Output:                                                           #
+        #   err : float64 - erreur cumulee des distances observe/attendu    #
+        # ***************************************************************** #
+
+        err = 0
+        for p in range(self.nb_segments):
+            f = np.power(np.dot(self.normal_vectors[p], self.pick_lines_Rc[p,:3]),2) + np.power(np.dot(self.normal_vectors[p], self.pick_lines_Rc[p,3:]),2)
+            err = err + f
+
+        err = np.sqrt(err / 2 * self.nb_segments)
+        return err
 
 
 def transform_and_draw_model(edges_Ro, intrinsic, extrinsic, fig_axis):
@@ -102,31 +213,7 @@ def calculate_normal_vector(p1_Ri, p2_Ri, intrinsic):
     return normal_vector
 
 
-def calculate_error(nb_segments, normal_vectors, segments_Rc):
-    # ***************************************************************** #
-    # A COMPLETER.                                                      #
-    # Input:                                                            #
-    #   nb_segments : par defaut 5 = nombre de segments selectionnes    #
-    #   normal_vectors : ndarray[Nx3] - normales aux plans              #
-    #                    d'interpretation des segments selectionnes     #
-    #                    N = nombre de segments                         #
-    #                    3 = coordonnees (X,Y,Z) des normales dans Rc   #
-    #   segments_Rc : ndarray[Nx6] = segments selectionnes dans Ro      #
-    #                 et transformes dans Rc                            #
-    #                 N = nombre de segments                            #
-    #                 6 = (X1, Y1, Z1, X2, Y2, Z2) des points P1 et     #
-    #                 P2 des aretes transformees dans Rc                #
-    # Output:                                                           #
-    #   err : float64 - erreur cumulee des distances observe/attendu    #
-    # ***************************************************************** #
 
-    err = 0
-    for p in range(nb_segments):
-        f = np.power(np.dot(normal_vectors[p], segments_Rc[p,:3]),2) + np.power(np.dot(normal_vectors[p], segments_Rc[p,3:]),2)
-        err = err + f
-
-    err = np.sqrt(err / 2 * nb_segments)
-    return err
 
 
 def partial_derivatives(normal_vector, P_c):
@@ -156,91 +243,7 @@ def partial_derivatives(normal_vector, P_c):
     return partial_derivative, crit_X0
 
 
-if __name__ == "__main__":
 
-    pick_lines_Ro, normal_vectors, image, image_2, model3D_Ro, model3D_Ro_final, intrinsic_matrix, \
-    Rc_to_Rc2_matrix = utils.select_segments()
-
-    print('Start optimization ...')
-
-    param_solution = np.array([-2.1, 0.7, 2.7, 3.1, 1.3, 18.0])
-    extrinsic_matrix = matTools.construct_matrix_from_vec(param_solution)
-
-    # Homogeneous transformation
-    pick_lines_Rc = np.copy(pick_lines_Ro)
-
-    pick_lines_Rc[:, [0, 1, 2]] = matTools.transform_point_with_matrix(extrinsic_matrix, pick_lines_Ro[:, [0, 1, 2]])
-    pick_lines_Rc[:, [3, 4, 5]] = matTools.transform_point_with_matrix(extrinsic_matrix, pick_lines_Ro[:, [3, 4, 5]])
-
-    # Shows a projection of the selected (clicked) edges according to the initial pose value
-    fig3 = plt.figure(3)
-    ax3 = fig3.add_subplot(111)
-    plt.imshow(image)
-    transform_and_draw_model(pick_lines_Ro, intrinsic_matrix, extrinsic_matrix, ax3)  # 3D model drawing
-    plt.show(block=False)
-
-    initial_error = calculate_error(nb_segments, normal_vectors, pick_lines_Rc)
-    print('Initial criteria : ' + str(initial_error))
-
-    l = 0.0001  # lambda value
-    it = 0
-    while True:
-        J = np.zeros((2 * nb_segments, 6))
-        F = np.zeros((2 * nb_segments))
-        lig = 0
-
-        pick_lines_Rc[:, [0, 1, 2]] = matTools.transform_point_with_matrix(extrinsic_matrix, pick_lines_Ro[:, [0, 1, 2]])
-        pick_lines_Rc[:, [3, 4, 5]] = matTools.transform_point_with_matrix(extrinsic_matrix, pick_lines_Ro[:, [3, 4, 5]])
-
-        for p in range(nb_segments):
-            normal_vector = np.copy(normal_vectors[p, [0, 1, 2]])
-            [partial_deriv, crit_X0] = partial_derivatives(normal_vector, pick_lines_Rc[p, [0, 1, 2]])
-            J[lig, :] = partial_deriv.T
-            F[lig] = -crit_X0
-            lig = lig + 1
-
-            [partial_deriv, crit_X0] = partial_derivatives(normal_vector, pick_lines_Rc[p, [3, 4, 5]])
-            J[lig, :] = partial_deriv.T
-            F[lig] = -crit_X0
-            lig = lig + 1
-
-        JJ = np.dot(J.T, J)
-        for i in range(JJ.shape[0]):
-            JJ[i, i] = JJ[i, i] * (1.0 + l)
-
-        # ********************************************************************* #
-        # A COMPLETER.                                                          #
-        delta_solution = np.dot(np.dot(np.linalg.inv(JJ), J.T), F)    
-        #@ est le produit matriciel                                              #
-        delta_extrinsic = matTools.construct_matrix_from_vec(delta_solution)  #
-        extrinsic_matrix = np.dot(delta_extrinsic, extrinsic_matrix)
-        #dans ce sens sinon ça meurt                                               #
-        # ********************************************************************* #
-
-        param_solution = matTools.construct_vec_from_matrix(extrinsic_matrix)
-        pick_lines_Rc[:, [0, 1, 2]] = matTools.transform_point_with_matrix(extrinsic_matrix, pick_lines_Ro[:, [0, 1, 2]])
-        pick_lines_Rc[:, [3, 4, 5]] = matTools.transform_point_with_matrix(extrinsic_matrix, pick_lines_Ro[:, [3, 4, 5]])
-
-        new_error = calculate_error(nb_segments, normal_vectors, pick_lines_Rc)
-        if new_error < EPS or abs(initial_error - new_error) < 10 ** -10:
-            break
-
-        plt.imshow(image)
-        transform_and_draw_model(pick_lines_Ro, intrinsic_matrix, extrinsic_matrix, ax3)  # 3D model drawing
-        plt.show(block=False)
-
-        print('Iteration[' + str(it) + '] : ' + str(new_error))
-        it = it + 1
-        initial_error = new_error
-
-    print('6-tuplet solution : ' + str(param_solution))
-    print('Error after convergence : ' + str(new_error))
-
-    fig4 = plt.figure(4)
-    ax4 = fig4.add_subplot(111)
-    plt.imshow(image)
-    transform_and_draw_model(model3D_Ro[12:], intrinsic_matrix, extrinsic_matrix, ax4)  # 3D model drawing
-    plt.show(block=True)
 
     # fig5 = plt.figure(5)
     # ax5 = fig5.add_subplot(111)

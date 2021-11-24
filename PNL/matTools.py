@@ -68,6 +68,10 @@ def construct_vec_from_matrix(extrinsic):
 
     return soluL
 
+def construct_matrix_from_euler_angles(euler_angles):
+    rot = np.zeros([3,3])
+    
+
 
 def transform_point_with_matrix(transformation_matrix, initial_point):
     initial_point_cpy = np.ones((initial_point.shape[0], 4))
