@@ -45,7 +45,7 @@ def matchLinesPoints(imgPath,liste_lines):
     for point in points:
         for line in linesClean:
             if appartientDroite(point,line):
-                index = np.where(lines == line) #TODO verifier si c'est bien trouver. Return array de toutes les positions possibles
+                index = np.where(linesClean == line) #TODO verifier si c'est bien trouver. Return array de toutes les positions possibles
                 displayPointLine(point,lines[index[0][0]],img,cblue)
                 pointTrouve = True
                 compteurPointTrouve = compteurPointTrouve + 1
@@ -53,16 +53,18 @@ def matchLinesPoints(imgPath,liste_lines):
         
         # Le point n'a pas ete trouve, il est affiche d'une couleur differente
         if pointTrouve == False:
-            #displayPoint(point,img,cred)
+            displayPoint(point,img,cred)
             pass
             
         
         pointTrouve = False
-        
+    
     print(compteurPointTrouve)
+    cv.waitKey()
+
 
 def appartientDroite(point,line):
-
+    n = 8  # nombre de pixel d'ecart aceptable
     x = point[0][0]
     y = point[0][1]
 
@@ -72,8 +74,17 @@ def appartientDroite(point,line):
     e = y - a*x - b
     if (e == 0):
         return True
+    elif (abs(e) <= 8):
+        return True
     else:
+        #print("e:"+str(e))
         return False
+
+if __name__ == "__main2__":
+    print(appartientDroite(([[4,7]]),equationDroite([10,1,1,10]))) #4 7
+
+# TODO 1 Calcul de l'erreur pour l'appartenance d'un point a une droite   
+# TODO 2 Verification de cette meme erreur sur les x 
 
 
 def displayPointLine(point,line,img,color):
@@ -87,19 +98,19 @@ def displayPointLine(point,line,img,color):
 
     Fonction affichant un point et une ligne de la meme couleur
     """
-    start_point = [line[0],line[1]]
-    end_point = [line[2],line[3]]
-
+    start_point = (int(line[0]),int(line[1]))
+    end_point = (int(line[2]),int(line[3]))
+    color = (0,0,255)
     img = cv.circle(img, (point[0][0],point[0][1]), radius_point, color, -1)
     img = cv.line(img, start_point, end_point, color, 1)
-    cv.imshow("PointLine",img)
-    cv.waitKey()
+    cv.imshow("PointLine",img) 
+    #cv.waitKey()
 
 
 def displayPoint(point,img,color):
     img = cv.circle(img, (point[0][0],point[0][1]), radius_point, color, -1)
-    cv.imshow("Point",img)
-    cv.waitKey()
+    cv.imshow("PointLine",img)
+    #cv.waitKey()
 
 
 if __name__ == "__main__":
