@@ -33,7 +33,7 @@ def getHoughLines(img):
 
     imgEdges = cv.Canny(src, 50, 200, None, 3)
     cv.imshow("Display",imgEdges)
-    cv.waitKey(500)
+    cv.waitKey()
     contours,h = cv.findContours(imgEdges,cv.RETR_CCOMP  ,cv.CHAIN_APPROX_TC89_L1)
     
     imgEdges = cv.cvtColor(imgEdges,cv.COLOR_GRAY2RGB)
