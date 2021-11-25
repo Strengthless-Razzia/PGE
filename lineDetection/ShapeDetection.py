@@ -32,11 +32,17 @@ def getHoughLines(img):
     ## TODO Potentiel : Ajouter un prétraitement de l'image pour avoir une meilleure détection des edges
 
     imgEdges = cv.Canny(src, 50, 200, None, 3)
-    lines = cv.HoughLinesP(imgEdges, 1, np.pi / 180, 50, None, 50, 10)
-    #Enlever une dimension inutile de HoughLinesP pour faciliter l'utilisation de lines
-    (x,y,z) = lines.shape
-    lines = np.resize(lines, (x,z))
-    return lines
+    cv.imshow("Display",imgEdges)
+    cv.waitKey(500)
+    contours,h = cv.findContours(imgEdges,cv.RETR_TREE,cv.CHAIN_APPROX_SIMPLE)
+    print(contours[1])
+    imgEdges = cv.cvtColor(imgEdges,cv.COLOR_GRAY2RGB)
+    cv.drawContours(imgEdges, contours, 4, (0, 0, 255),1)
+    
+    cv.imshow("Kekito",imgEdges)
+    cv.waitKey(500)
+
+    return contours
 
 
 
