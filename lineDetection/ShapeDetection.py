@@ -34,13 +34,22 @@ def getHoughLines(img):
     imgEdges = cv.Canny(src, 50, 200, None, 3)
     cv.imshow("Display",imgEdges)
     cv.waitKey(500)
-    contours,h = cv.findContours(imgEdges,cv.RETR_TREE,cv.CHAIN_APPROX_SIMPLE)
-    print(contours[1])
-    imgEdges = cv.cvtColor(imgEdges,cv.COLOR_GRAY2RGB)
-    cv.drawContours(imgEdges, contours, 4, (0, 0, 255),1)
+    contours,h = cv.findContours(imgEdges,cv.RETR_CCOMP  ,cv.CHAIN_APPROX_TC89_L1)
     
-    cv.imshow("Kekito",imgEdges)
-    cv.waitKey(500)
+    imgEdges = cv.cvtColor(imgEdges,cv.COLOR_GRAY2RGB)
+    for currentContour in contours:
+        if cv.contourArea(currentContour) >200:
+            
+            tempImg = imgEdges
+            approx = cv.approxPolyDP(currentContour, 0.01 * cv.arcLength(currentContour, True), True)
+            if len(approx) == 4:
+                cv.drawContours(tempImg, currentContour, -1, (0, 0, 255),5)
+                for ap in approx:
+                    cv.circle(tempImg,ap[0], 5, (0,255,0), -1)
+                cv.imshow("Kekito",tempImg)
+                cv.waitKey()
+    
+    
 
     return contours
 
