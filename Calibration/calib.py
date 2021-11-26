@@ -6,7 +6,7 @@ import glob
 
 
 # Define the dimensions of checkerboard
-CHECKERBOARD = (7, 8)
+CHECKERBOARD = (24, 17)
 
 
 # stop the iteration when specified
@@ -36,7 +36,7 @@ prev_img_shape = None
 # in a given directory. Since no path is
 # specified, it will take current directory
 # jpg files alone
-images = glob.glob('datas/Unity/*.png')
+images = glob.glob('datas/*.png')
 
 for filename in images:
 	image = cv2.imread(filename)
