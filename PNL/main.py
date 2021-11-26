@@ -1,14 +1,24 @@
 from PNL_implementation import PNL
 from utils import get_calib_params
 from manualLineDetection.manual_line_detection import select_segments
+import numpy as np
 
 
-edges_file_path = '../data_plaques/Plaque_1.edges'
-points_file_path = '../data_plaques/Plaque_1.xyz'
-image_path = '../Photos/plaque=1_position=(1000.0, 8000.0, -3000.0)_rotation=(60.0, 0.0, 15.0)_date=2021-11-22_16-44-13.png'
-nb_segments = 4
+edges_file_path = './data_plaques/Plaque_3.edges'
+points_file_path = './data_plaques/Plaque_3.xyz'
+image_path = './Photos/259364748_584922802834719_4663999256312894294_n.jpg'
+nb_segments = 5
 
-intrinsic_matrix = get_calib_params('../Calibration/calib_simulation/calibration_parameters.txt')
+#intrinsic_matrix = get_calib_params('./Calibration/calib_simulation/calibration_parameters.txt')
+
+#intrinsic_matrix = np.array([   [2.60607474e+03, 0.00000000e+00, 2.21400822e+02],
+#                                [0.00000000e+00, 2.24540967e+03, 4.43022384e+02],
+#                                [0.00000000e+00, 0.00000000e+00, 1.00000000e+00]])
+#
+
+intrinsic_matrix = np.array([   [1.96906639e+03, 0.00000000e+00, 2.45375293e+02],
+                                [0.00000000e+00, 1.94755972e+03, 4.84719674e+02],
+                                [0.00000000e+00, 0.00000000e+00, 1.00000000e+00]])
 
 if __name__ == '__main__':
     
