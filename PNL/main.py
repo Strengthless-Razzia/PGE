@@ -9,12 +9,12 @@ points_file_path = './data_plaques/Plaque_3.xyz'
 image_path = './Photos/259364748_584922802834719_4663999256312894294_n.jpg'
 nb_segments = 5
 
-#intrinsic_matrix = get_calib_params('./Calibration/calib_simulation/calibration_parameters.txt')
+intrinsic_matrix = get_calib_params('./Calibration/calib_simulation/calibration_parameters.txt')
 
-intrinsic_matrix = np.array([   [2.60607474e+03, 0.00000000e+00, 2.21400822e+02],
-                                [0.00000000e+00, 2.24540967e+03, 4.43022384e+02],
-                                [0.00000000e+00, 0.00000000e+00, 1.00000000e+00]])
-
+#intrinsic_matrix = np.array([   [2.60607474e+03, 0.00000000e+00, 2.21400822e+02],
+#                                [0.00000000e+00, 2.24540967e+03, 4.43022384e+02],
+#                                [0.00000000e+00, 0.00000000e+00, 1.00000000e+00]])
+#
 
 if __name__ == '__main__':
     
