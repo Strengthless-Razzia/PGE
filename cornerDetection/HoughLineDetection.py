@@ -237,12 +237,12 @@ def removeSimilarLines(lines,threshold):
 
 if __name__ == "__main__": 
     #For all img files in directory dataset
-    listOfFiles = os.listdir("Codes/merging_code/dataset")
+    listOfFiles = os.listdir("cornerDetection/dataset")
     for f in listOfFiles:
         if ".png" in f or ".jpg" in f:
             a_t = 0.5
             b_t = 5
-            imgPath = "Codes/merging_code/dataset/"+f
+            imgPath = "cornerDetection/dataset/"+f
 
             lines = getHoughLines(imgPath)
             #displayImgWithLines(imgPath, lines, "Display")

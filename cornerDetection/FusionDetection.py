@@ -14,9 +14,9 @@ from HoughLineDetection import *
 from HarrisCornerDetection import *
 
 radius_point = 3
-cred = (255,0,0)
+cred = (0,0,255)
 cgreen = (0,255,0)
-cblue = (0,0,255)
+cblue = (255,0,0)
 cyellow = (0,255,255)
 
 
@@ -40,9 +40,10 @@ def matchLinesPoints(imgPath,liste_lines):
     s = int(linesClean.size/2)
     linesClean = linesClean.reshape(s,2) 
     lines = lines.reshape(s,4) # utile pour venir tracer une ligne ensuite en utilisant deux points et non les coeff <a> et <b>
-
+    cpt = 0
     # A chaque <point> detecte par Harris's corner algorithm, calcule s'il appartient a une des droites de <linesClean>
     for point in points:
+        cpt = cpt +1
         for line in linesClean:
             if appartientDroite(point,line):
                 index = np.where(linesClean == line) #TODO verifier si c'est bien trouver. Return array de toutes les positions possibles
@@ -53,13 +54,14 @@ def matchLinesPoints(imgPath,liste_lines):
         
         # Le point n'a pas ete trouve, il est affiche d'une couleur differente
         if pointTrouve == False:
-            displayPoint(point,img,cred)
+            #displayPoint(point,img,cred)
             pass
             
         
         pointTrouve = False
-    
-    print(compteurPointTrouve)
+    # linesClean.size/2 car <linesClean> {a,b} (tableau n*2)
+    # points.size/2 car <points> {x,y} (tableau n*2)
+    print(str(compteurPointTrouve) + " points correles avec " + str(int(points.size/2)) + " angles et " + str(int(linesClean.size/2)) + " lignes detectes.")  
     cv.waitKey()
 
 
@@ -94,9 +96,11 @@ def displayPointLine(point,line,img,color):
     """
     start_point = (int(line[0]),int(line[1]))
     end_point = (int(line[2]),int(line[3]))
-    color = (0,0,255)
+    color = (255,0,0)
     img = cv.circle(img, (point[0][0],point[0][1]), radius_point, color, -1)
-    img = cv.line(img, start_point, end_point, color, 1)
+    #img = cv.line(img, start_point, end_point, color, 1)
+
+
     cv.imshow("PointLine",img) 
 
 
@@ -117,12 +121,12 @@ def displayPoint(point,img,color):
 
 
 if __name__ == "__main__":
-    listOfFiles = os.listdir("Codes/merging_code/dataset")
+    listOfFiles = os.listdir("cornerDetection/dataset")
     for f in listOfFiles:
         if ".png" in f or ".jpg" in f:
             a_t = 0.5
             b_t = 5
-            imgPath = "Codes/merging_code/dataset/"+f
+            imgPath = "cornerDetection/dataset/"+f
 
             lines = getHoughLines(imgPath)
             

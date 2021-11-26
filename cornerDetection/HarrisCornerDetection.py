@@ -16,7 +16,7 @@ def getHarrisCorner(img):
     Fonction générant les angles de Harris
     """
     gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
-    corners = cv.goodFeaturesToTrack(gray, 50, 0.01, 10)
+    corners = cv.goodFeaturesToTrack(gray, 25, 0.01, 10)
     corners = np.int0(corners)
     return corners
 
