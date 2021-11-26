@@ -1,5 +1,5 @@
 """
-@file hough_lines.py
+@file HoughLineDetection.py
 @brief This program demonstrates line finding with the Hough transform
 """
 import math
@@ -21,7 +21,7 @@ def getCenter(l):
     y2 = l[3]
     centerX = (x2+x1)/2
     centerY = (y2+y1)/2
-    return (int(centerX),int(centerY))
+    return [int(centerX),int(centerY)]
 
 
 
@@ -76,10 +76,11 @@ def displayImgWithLines(img, lines, title):
         print ('Error opening image!')
         return -1   
     src = cv.cvtColor(src,cv.COLOR_GRAY2RGB)
+
     if lines is not None:
         for i in range(0, len(lines)):
             l = lines[i]
-            cv.line(src, (l[0], l[1]), (l[2], l[3]), (0,0,255), 1, cv.LINE_AA)
+            cv.line(src, (int(l[0]), int(l[1])), (int(l[2]), int(l[3])), (0,0,255), 1, cv.LINE_AA)
     cv.imshow(title,src)
     cv.waitKey()
 
@@ -99,7 +100,7 @@ def displayIndividualLinesOfImage(img,lines):
         line = line
         ctr = getCenter(line)
         src = cv.imread(img)
-        cv.line(src, [int(line[0]),int(line[1])], [int(line[2]),int(line[3])], (0,0,255), 1, cv.LINE_AA)
+        cv.line(src, (int(line[0]),int(line[1])), (int(line[2]),int(line[3])), (0,0,255), 1, cv.LINE_AA)
         cv.circle(src,ctr,2,(0,255,0))
         cv.imshow("LineDisplay",src)
         cv.waitKey()
@@ -113,7 +114,10 @@ def calcVector(l):
     Calcul de l'expression mathématique de la ligne ax+b 
     """
     #Calc direction of line
-    a = (l[3]-l[1])/(l[2]-l[0])
+    if l[2]-l[0] == 0:
+        a = 10000
+    else:
+        a = (l[3]-l[1])/(l[2]-l[0])
     #Calc position in 0
     b = l[1]-l[0]*a 
     return [a,b]
@@ -149,36 +153,178 @@ def mergeSimilarLines(lines, threshold_a,threshold_b):
     """
     
 
-    
     [N,tmp] = lines.shape
     listOfExpressions = np.zeros([N,2])
-    newList = np.empty([0,4])
+    mergedLines = np.empty([0,4])
     for i in range(N):
         listOfExpressions[i] =  calcVector(lines[i])
     
-    for i in range(N):
-        for j in range(i,N):
+    i = 0
+    while i < N:
+        found = False
+        j = i
+        while j < N:
             if j != i:
+                #Si les deux lignes sont suffisamment proches 
                 if abs(listOfExpressions[i][0] - listOfExpressions[j][0]) <= threshold_a and abs(listOfExpressions[i][1] - listOfExpressions[j][1]) <= threshold_b:
+                    #Si on en a pas déjà rajouté une
+                    if not found:
+                        newLine = mergeTwoLines(lines[i],lines[j])
+                        mergedLines = np.vstack([mergedLines,newLine])
+                    else: 
+                        newLine = mergeTwoLines(mergedLines[-1],lines[j])   #Si on en a déjà rajouté une, on la merge avec la nouvelle ligne
+                        mergedLines[-1] = newLine
+                    found = True
+                    lines = np.delete(lines, j,axis=0)
+                    listOfExpressions = np.delete(listOfExpressions, j,axis=0)
+                    [N,tmp] = lines.shape
+            j += 1
+        
+        if not found:
+            mergedLines = np.vstack([mergedLines,lines[i]])
+        i += 1
+    return mergedLines
 
-                    newLine = mergeTwoLines(lines[i],lines[j])
-                    newList = np.vstack([newList,newLine]) 
-    return newList
+def linesAreSimilar(l1,l2,t):
+    """
+    in : 
+        l1 : array {x1,y1,x2,y2}
+        l2 : array {x1,y1,x2,y2}
+        t  : threshold de détection
+    out : 
+        isSimilar : Bool
+    Retourne vrai si les deux lignes en entrée sont similaires selon le seuil t
+    """
+    pts1a = [l1[0],l1[1]]
+    pts1b = [l1[2],l1[3]]
+    pts2a = [l2[0],l2[1]]
+    pts2b = [l2[2],l2[3]]
 
+    #si pt1a = pt2a & pt1b = pt2b 
+    if abs(pts1a[0] - pts2a[0]) + abs(pts1a[1] - pts2a[1]) <= t:
+        if abs(pts1b[0] - pts2b[0]) + abs(pts1b[1] - pts2b[1]) <= t:
+            return True
+    #si pt1a = pt2b et pt1b = pt2a
+    if abs(pts1a[0] - pts2b[0]) + abs(pts1a[1] - pts2b[1]) <= t:
+        if abs(pts1b[0] - pts2a[0]) + abs(pts1b[1] - pts2a[1]) <= t:
+            return True
+    return False
+    
 
-if __name__ == "__main__":
+def removeSimilarLines(lines,threshold):
+    """
+    in :
+        lines : array [N, 4] de lignes 
+    out:
+        cleanedLines : array [l, 4] de lignes
+    Supprime les doublons 
+    """
+    [N,tmp] = lines.shape
+    cleanedLines = np.empty([0,4])
+    
+    for i in range(N):
+        stop = False
+        for j in range(i,N):
+            if i != j:
+                #Si les deux points sont suffisamment similaire
+                if linesAreSimilar(lines[i],lines[j],threshold):
+                    stop = True
+                    break
+        if not stop: #Si aucune autre ligne n'est similaire on sauvegarde la ligne
+            cleanedLines = np.vstack([cleanedLines,lines[i]])
+    return cleanedLines
+
+def getDistanceFromCenter(l,c):
+    """
+    in :
+        l : {x1,y1,x2,y2}
+        c : center of image {x,y}
+    out:
+        dist : float de distance de la ligne/centre
+    
+    Calcule la distance du centre
+    """
+    cL = getCenter(l)
+    dist = abs(c[0] - cL[0]) + abs(c[1] - cL[1])
+    return dist
+
+def calcBarycentre(lines):
+    """
+    in :
+        lines : array [N, 4] de lignes
+    out:
+        c : barycentre [x,y]
+    
+    Calcule le barycentre des lignes
+    """
+
+    [N,tmp] = lines.shape
+    centers = np.empty([N,2])
+    for i in range(N):
+        centers[i] = getCenter(lines[i])
+    return np.mean(centers, axis=0)
+
+def chooseTheBestCandidates(lines, nbOfCandidates, img):
+    """
+    in :
+        lines : array [N, 4] de lignes
+        nbOfCandidates : nombre de candidats au PNL voulus 
+        img : Path vers l'image a utiliser, nécessaire pour avoir le milieu
+    out:
+        bestLines : array [nbOfCandidates, 4] de lignes
+    Retourne les nbOfCandidates lignes les plus au centre, les plus probables d'être de la plaque
+    """
+    src = cv.imread(img,cv.IMREAD_GRAYSCALE)
+    [h,w] = src.shape
+    ctr = calcBarycentre(lines)
+    [N,tmp] = lines.shape
+    if N < nbOfCandidates:
+        nbOfCandidates = N
+    listOfDistances = np.empty(N)
+    results = np.empty([nbOfCandidates,4])
+    for i in range(N):
+        listOfDistances[i] = getDistanceFromCenter(lines[i], ctr)
+
+    for i in range(nbOfCandidates):
+
+        indexOfMin = np.where(listOfDistances == min(listOfDistances))[0][0]
+        results[i] = lines[indexOfMin]
+        lines = np.delete(lines,indexOfMin,axis=0)
+        listOfDistances = np.delete(listOfDistances,indexOfMin)
+    return results
+
+if __name__ == "__main__": 
     #For all img files in directory dataset
     listOfFiles = os.listdir("lineDetection\dataset")
     for f in listOfFiles:
         if ".png" in f or ".jpg" in f:
-            
+            a_t = 0.5
+            b_t = 5
             imgPath = "lineDetection\\dataset\\"+f
 
             lines = getHoughLines(imgPath)
             #displayImgWithLines(imgPath, lines, "Display")
             
-            mergedList=mergeSimilarLines(lines,2,2)
-            displayIndividualLinesOfImage(imgPath,mergedList)
+            old = lines.shape
+            mergedList=mergeSimilarLines(lines,a_t,b_t)
+            
+            new = mergedList.shape
+            while new!= old:
+                old = mergedList.shape
+                mergedList=mergeSimilarLines(mergedList,a_t,b_t)
+                new = mergedList.shape
+            cleanedList = removeSimilarLines(mergedList,10)
+            displayImgWithLines(imgPath, lines, "Original")
+            
+            print(imgPath)
+            print("lines shape" + str(lines.shape))
+            print("merge shape" + str(mergedList.shape))
+            print("clean shape" + str(cleanedList.shape))
 
-        
-    print(mergedList)
+            displayImgWithLines(imgPath, mergedList, "Merged")
+            displayImgWithLines(imgPath, cleanedList, "Cleaned")
+            displayIndividualLinesOfImage(imgPath,cleanedList)
+            bestCandidates = chooseTheBestCandidates(cleanedList,4,imgPath)
+            displayImgWithLines(imgPath, bestCandidates, "Best")
+            print("Best  shape" + str(bestCandidates .shape))
+            displayIndividualLinesOfImage(imgPath,bestCandidates)
