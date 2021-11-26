@@ -1,5 +1,5 @@
 """
-@file hough_lines.py
+@file HoughLineDetection.py
 @brief This program demonstrates line finding with the Hough transform
 """
 import math
