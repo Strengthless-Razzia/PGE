@@ -6,7 +6,7 @@ import glob
 
 
 # Define the dimensions of checkerboard
-CHECKERBOARD = (6, 9)
+CHECKERBOARD = (23,16)
 
 
 # stop the iteration when specified
@@ -36,7 +36,7 @@ prev_img_shape = None
 # in a given directory. Since no path is
 # specified, it will take current directory
 # jpg files alone
-images = glob.glob('datas/*.jpg')
+images = glob.glob('datas/Raf_tel/*.jpg')
 
 for filename in images:
 	image = cv2.imread(filename)
@@ -47,7 +47,7 @@ for filename in images:
 	# found in the image then ret = true
 	ret, corners = cv2.findChessboardCorners(
 					grayColor, CHECKERBOARD,
-					cv2.CALIB_CB_ADAPTIVE_THRESH
+					cv2.CALIB_CB_ADAPTIVE_THRESH>
 					+ cv2.CALIB_CB_FAST_CHECK +
 					cv2.CALIB_CB_NORMALIZE_IMAGE)
 
