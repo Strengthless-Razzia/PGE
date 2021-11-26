@@ -11,7 +11,7 @@ import sys
 import os
 
 from HoughLineDetection import *
-from cornerDetection import *
+from HarrisCornerDetection import *
 
 radius_point = 3
 cred = (255,0,0)
@@ -63,6 +63,7 @@ def matchLinesPoints(imgPath,liste_lines):
     cv.waitKey()
 
 
+
 def appartientDroite(point,line):
     n = 8  # nombre de pixel d'ecart aceptable
     x = point[0][0]
@@ -77,14 +78,7 @@ def appartientDroite(point,line):
     elif (abs(e) <= 8):
         return True
     else:
-        #print("e:"+str(e))
         return False
-
-if __name__ == "__main2__":
-    print(appartientDroite(([[4,7]]),equationDroite([10,1,1,10]))) #4 7
-
-# TODO 1 Calcul de l'erreur pour l'appartenance d'un point a une droite   
-# TODO 2 Verification de cette meme erreur sur les x 
 
 
 def displayPointLine(point,line,img,color):
@@ -104,13 +98,22 @@ def displayPointLine(point,line,img,color):
     img = cv.circle(img, (point[0][0],point[0][1]), radius_point, color, -1)
     img = cv.line(img, start_point, end_point, color, 1)
     cv.imshow("PointLine",img) 
-    #cv.waitKey()
+
 
 
 def displayPoint(point,img,color):
+    """
+    in :
+        point : point {x,y}
+        img : image a afficher
+        color : couleur utilisee pour point
+    out:
+
+    Fonction affichant un point
+    """
     img = cv.circle(img, (point[0][0],point[0][1]), radius_point, color, -1)
     cv.imshow("PointLine",img)
-    #cv.waitKey()
+
 
 
 if __name__ == "__main__":

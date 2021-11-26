@@ -1,0 +1,4 @@
+
+<FusionDetection.py> utilise les fonctions de <HarrisCornerDetection.py> et <HoughLineDetection.py>
+dans l'optique de correller la detection de ligne (Hough) avec la detection d'angle (Harris) et 
+ainsi obtenir les angles voulut de l'objet plaque.
