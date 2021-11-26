@@ -4,10 +4,10 @@ from manualLineDetection.manual_line_detection import select_segments
 import numpy as np
 
 
-edges_file_path = './data_plaques/Plaque_3.edges'
-points_file_path = './data_plaques/Plaque_3.xyz'
-image_path = './Photos/259364748_584922802834719_4663999256312894294_n.jpg'
-nb_segments = 5
+edges_file_path = './data_plaques/Plaque_1.edges'
+points_file_path = './data_plaques/Plaque_1.xyz'
+image_path = './Photos/raf_plaque_1.jpg'
+nb_segments = 4
 
 #intrinsic_matrix = get_calib_params('./Calibration/calib_simulation/calibration_parameters.txt')
 
