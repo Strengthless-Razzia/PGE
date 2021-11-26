@@ -6,7 +6,7 @@ import glob
 
 
 # Define the dimensions of checkerboard
-CHECKERBOARD = (12, 9)
+CHECKERBOARD = (7, 8)
 
 
 # stop the iteration when specified
