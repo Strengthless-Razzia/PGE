@@ -46,16 +46,21 @@ def matchLinesPoints(imgPath,liste_lines):
     lines = lines.reshape(s,4) # utile pour venir tracer une ligne ensuite en utilisant deux points et non les coeff <a> et <b>
     cpt = 0
     # A chaque <point> detecte par Harris's corner algorithm, calcule s'il appartient a une des droites de <linesClean>
+    # img.fill(255)
+
     for point in points:
         cpt = cpt +1
         for line in linesClean:
             if appartientDroite(point,line):
-                index = np.where(linesClean == line) #TODO verifier si c'est bien trouver. Return array de toutes les positions possibles
+                index = np.where(linesClean == line) 
                 displayPointLine(point,lines[index[0][0]],img,cblue)
                 [pointsContour,linesContour] = updateContourPlaque(pointsContour,linesContour,point,lines[index[0][0]])
+                
+                # il peux y a voir plusieurs lignes correlles avec un seul point 
+                if pointTrouve == False:
+                    compteurPointTrouve = compteurPointTrouve + 1
                 pointTrouve = True
-                compteurPointTrouve = compteurPointTrouve + 1
-                break
+                
         
         # Le point n'a pas ete trouve, il est affiche d'une couleur differente
         if pointTrouve == False:
@@ -109,6 +114,7 @@ def displayPointLine(point,line,img,color):
     start_point = (int(line[0]),int(line[1]))
     end_point = (int(line[2]),int(line[3]))
     color = (255,0,0)
+
     img = cv.circle(img, (point[0][0],point[0][1]), radius_point, color, -1)
     img = cv.line(img, start_point, end_point, color, 1)
 
@@ -133,17 +139,12 @@ def displayPoint(point,img,color):
 
 
 def updateContourPlaque(liste_points, liste_lines, point, line):
-    # np.append(linesClean,equationDroite(line),axis=0)    
-    # s = int(linesClean.size/2)
-    # linesClean = linesClean.reshape(s,2) 
-    #
     liste_lines = np.append(liste_lines, equationDroite(line), axis=0)
     liste_points = np.append(liste_points, point[0], axis=0)
     return [liste_points,liste_lines]
     
 
 def displayContourPlaque(liste_points, liste_lines, img, color):
-
     for point in liste_points:
         index1 = np.where(liste_points == point)[0][0]
         # pour chaque point on regarde les autres points...
@@ -184,6 +185,6 @@ if __name__ == "__main__":
             cleanedList = removeSimilarLines(mergedList,10)
 
 
-            #displayImgWithLines(imgPath, cleanedList, "Cleaned")
-            #displayHarrisCorner(imgPath)
+            displayImgWithLines(imgPath, cleanedList, "Cleaned")
+            displayHarrisCorner(imgPath)
             matchLinesPoints(imgPath, cleanedList)
