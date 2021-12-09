@@ -127,13 +127,16 @@ def displayIndividualContourOfImage(img,lines):
 
 
 
-if __name__ == "__main__": 
+if __name__ == "__main__":
+
+    folder_path = "./Photos plaques/plaque1_raftel/"
+
     #For all img files in directory dataset
-    listOfFiles = os.listdir("lineDetection\dataset")
+    listOfFiles = os.listdir(folder_path)
     for f in listOfFiles:
         if ".png" in f or ".jpg" in f:
             
-            imgPath = "lineDetection\\dataset\\"+f
+            imgPath = folder_path + f
 
             contours = getContours(imgPath, True)
             
