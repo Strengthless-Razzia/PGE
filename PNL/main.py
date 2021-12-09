@@ -6,26 +6,30 @@ import numpy as np
 
 edges_file_path = './data_plaques/Plaque_1.edges'
 points_file_path = './data_plaques/Plaque_1.xyz'
-image_path = 'Photos plaques/plaque1_raftel/261173388_1305929543154462_3025735692413239221_n.jpg'
-nb_segments = 10
+image_path = './Photos plaques/CognexInsight5100/capture1.jpg'
+nb_segments = 4
 
-#intrinsic_matrix = get_calib_params('./Calibration/calib_simulation/calibration_parameters.txt')
+intrinsic_matrix_unity = get_calib_params('./Calibration/calib_simulation/calibration_parameters.txt')
 
 #intrinsic_matrix = np.array([   [2.60607474e+03, 0.00000000e+00, 2.21400822e+02],
 #                                [0.00000000e+00, 2.24540967e+03, 4.43022384e+02],
 #                                [0.00000000e+00, 0.00000000e+00, 1.00000000e+00]])
 #
 
-intrinsic_matrix = np.array([   [1.96906639e+03, 0.00000000e+00, 2.45375293e+02],
-                                [0.00000000e+00, 1.94755972e+03, 4.84719674e+02],
-                                [0.00000000e+00, 0.00000000e+00, 1.00000000e+00]])
+#intrinsic_matrix = np.array([   [1.96906639e+03, 0.00000000e+00, 2.45375293e+02],
+#                                [0.00000000e+00, 1.94755972e+03, 4.84719674e+02],
+#                                [0.00000000e+00, 0.00000000e+00, 1.00000000e+00]])
+
+intrinsic_matrix_5100  = get_calib_params('./Calibration/calib_simulation/calibration_parameters_5100.txt')
+
+print(intrinsic_matrix_5100)
 
 if __name__ == '__main__':
     
 
-    pick_lines_Ro, normal_vectors, model3D_Ro =  select_segments(nb_segments, intrinsic_matrix, image_path, points_file_path, edges_file_path)
+    pick_lines_Ro, normal_vectors, model3D_Ro =  select_segments(nb_segments, intrinsic_matrix_5100, image_path, points_file_path, edges_file_path)
 
-    pnl = PNL(nb_segments, pick_lines_Ro, normal_vectors, model3D_Ro, intrinsic_matrix)
+    pnl = PNL(nb_segments, pick_lines_Ro, normal_vectors, model3D_Ro, intrinsic_matrix_5100)
 
     pnl.run(image_path)
 

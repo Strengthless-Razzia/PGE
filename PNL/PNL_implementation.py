@@ -90,13 +90,14 @@ class PNL:
 
         print('6-tuplet solution : ' + str(self.param_solution))
         print('Error after convergence : ' + str(new_error))
+        print('Final Extrincis parameters : ' + str(matTools.construct_matrix_from_vec(self.param_solution)))
 
         if image_path is not None:
 
             fig4 = plt.figure(4)
             ax4 = fig4.add_subplot(111)
             plt.imshow( mpimg.imread(image_path))
-            transform_and_draw_model(self.model3D_Ro[12:], self.intrinsic_matrix, self.extrinsic_matrix, ax4)  # 3D model drawing
+            transform_and_draw_model(self.model3D_Ro[:], self.intrinsic_matrix, self.extrinsic_matrix, ax4)  # 3D model drawing
             plt.show(block=True)
 
         
