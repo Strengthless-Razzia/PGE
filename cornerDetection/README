@@ -2,3 +2,12 @@
 <FusionDetection.py> utilise les fonctions de <HarrisCornerDetection.py> et <HoughLineDetection.py>
 dans l'optique de correller la detection de ligne (Hough) avec la detection d'angle (Harris) et 
 ainsi obtenir les angles voulut de l'objet plaque.
+
+Les résultats observés sont dans le dossier Resultats.
+- "Cleaned.png" : image obtenue après application de la détection de contour de Hough sur l'image de base.
+- "HarrisCorner.png" : image obtenue après application de la détection d'angle de Harris sur l'image de base.
+
+- "PointLine.png" : Correlation des deux images précédentes pour obtenir des points d'angle plus précis et ainsi trouvé les contours de la plaque.
+
+- "Contour.png" : Test d'amélioration de l'image PointLine.png pour obtenir plus précisement le contour spécifique de la plaque. 
+Remarque : Test non concluant.
