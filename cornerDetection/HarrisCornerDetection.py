@@ -116,6 +116,8 @@ def displayHarrisCorner(imgPath) :
         x, y = i.ravel()
         cv.circle(img, (x, y), 3, (0,0,255), -1)    
     cv.imshow("HarrisCorner",img)
+    cv.imwrite('HarrisCorner.png',img)
+
     cv.waitKey()
 
 

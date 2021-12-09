@@ -120,6 +120,7 @@ def displayPointLine(point,line,img,color):
 
 
     cv.imshow("PointLine",img) 
+    cv.imwrite('PointLine.png',img)
     #cv.waitKey()
 
 
@@ -136,7 +137,6 @@ def displayPoint(point,img,color):
     """
     img = cv.circle(img, (point[0][0],point[0][1]), radius_point, color, -1)
     cv.imshow("PointLine",img)
-
 
 def updateContourPlaque(liste_points, liste_lines, point, line):
     liste_lines = np.append(liste_lines, equationDroite(line), axis=0)
@@ -162,6 +162,7 @@ def displayContourPlaque(liste_points, liste_lines, img, color):
                     img = cv.line(img, (int(point[0]),int(point[1])), (int(p[0]),int(p[1])), color, 2)
 
     cv.imshow("Contour",img)
+    cv.imwrite('Contour.png',img)
 
 
 if __name__ == "__main__":

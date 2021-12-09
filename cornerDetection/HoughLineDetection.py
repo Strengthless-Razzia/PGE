@@ -82,6 +82,8 @@ def displayImgWithLines(img, lines, title):
             l = lines[i]
             cv.line(src, (int(l[0]), int(l[1])), (int(l[2]), int(l[3])), (0,0,255), 1, cv.LINE_AA)
     cv.imshow(title,src)
+    title = title + '.png'
+    cv.imwrite(title,src)
     cv.waitKey()
 
 
