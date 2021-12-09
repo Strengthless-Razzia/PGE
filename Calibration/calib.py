@@ -36,7 +36,7 @@ prev_img_shape = None
 # in a given directory. Since no path is
 # specified, it will take current directory
 # jpg files alone
-images = glob.glob('datas/Raf_tel/*.jpg')
+images = glob.glob('datas/camera_aip/*.jpg')
 
 for filename in images:
 	image = cv2.imread(filename)
