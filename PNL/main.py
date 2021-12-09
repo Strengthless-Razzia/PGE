@@ -10,6 +10,7 @@ image_path = './Photos plaques/CognexInsight5100/capture1.jpg'
 nb_segments = 4
 
 intrinsic_matrix_unity = get_calib_params('./Calibration/calib_simulation/calibration_parameters.txt')
+#lol
 
 #intrinsic_matrix = np.array([   [2.60607474e+03, 0.00000000e+00, 2.21400822e+02],
 #                                [0.00000000e+00, 2.24540967e+03, 4.43022384e+02],
