@@ -21,7 +21,7 @@ def getCenter(l):
     y2 = l[3]
     centerX = (x2+x1)/2
     centerY = (y2+y1)/2
-    return [int(centerX),int(centerY)]
+    return (int(centerX),int(centerY))
 
 
 
@@ -295,12 +295,14 @@ def chooseTheBestCandidates(lines, nbOfCandidates, img):
 
 if __name__ == "__main__": 
     #For all img files in directory dataset
-    listOfFiles = os.listdir("lineDetection\dataset")
+
+    folder_path = "./Photos plaques/plaque1_raftel/"
+    listOfFiles = os.listdir(folder_path)
     for f in listOfFiles:
         if ".png" in f or ".jpg" in f:
             a_t = 0.5
             b_t = 5
-            imgPath = "lineDetection\\dataset\\"+f
+            imgPath = folder_path + f
 
             lines = getHoughLines(imgPath)
             #displayImgWithLines(imgPath, lines, "Display")

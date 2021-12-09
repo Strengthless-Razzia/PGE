@@ -60,17 +60,19 @@ class PNL:
                 F[lig] = -crit_X0
                 lig = lig + 1
 
+            #print('Jacobienne : \n' + str(J))
+
             JJ = np.dot(J.T, J)
             for i in range(JJ.shape[0]):
                 JJ[i, i] = JJ[i, i] * (1.0 + l)
 
             # ********************************************************************* #
             # A COMPLETER.                                                          #
-            delta_solution = np.dot(np.dot(np.linalg.inv(JJ), J.T), F)    
+            delta_solution = np.dot(np.dot(np.linalg.inv(JJ), J.T), F)
             #@ est le produit matriciel                                              #
             delta_extrinsic = matTools.construct_matrix_from_vec(delta_solution)  #
             self.extrinsic_matrix = np.dot(delta_extrinsic, self.extrinsic_matrix)
-            print(self.extrinsic_matrix)
+            #print(self.extrinsic_matrix)
             #dans ce sens sinon ça meurt                                               #
             # ********************************************************************* #
 

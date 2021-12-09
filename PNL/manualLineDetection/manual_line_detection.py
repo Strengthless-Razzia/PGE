@@ -4,7 +4,7 @@ from mpl_toolkits.mplot3d import Axes3D
 
 import numpy as np
 
-line_color = ['cyan', 'magenta', 'yellow', 'red', 'green', 'blue']
+line_color = ['cyan', 'magenta', 'yellow', 'red', 'green', 'blue', 'orange', 'olive', 'purple', 'pink']
 
 iPick = 0
 iClick = 0

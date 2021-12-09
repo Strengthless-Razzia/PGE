@@ -6,8 +6,8 @@ import numpy as np
 
 edges_file_path = './data_plaques/Plaque_1.edges'
 points_file_path = './data_plaques/Plaque_1.xyz'
-image_path = './Photos/raf_plaque_1.jpg'
-nb_segments = 4
+image_path = 'Photos plaques/plaque1_raftel/261173388_1305929543154462_3025735692413239221_n.jpg'
+nb_segments = 10
 
 #intrinsic_matrix = get_calib_params('./Calibration/calib_simulation/calibration_parameters.txt')
 
