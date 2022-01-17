@@ -28,7 +28,7 @@ objpoints = [] # 3d point in real world space
 imgpoints = [] # 2d points in image plane.
 
 
-images = glob.glob('datas/Unity/*.png')
+images = glob.glob('data/Unity/*.png')
 
 for image in images:
 
