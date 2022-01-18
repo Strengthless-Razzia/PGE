@@ -24,21 +24,20 @@ def increase_brightness(img, value=20):
     return img
 
 #Partie test des paramètres
-def le_hough(img, nb, minV=10,maxV=60):
-    imgNum = 0
-    blur=5
-    dp=1
-    minDist=295 #270
+def le_hough(img, minV=10,maxV=60):
+    
+    blur = 5
+    dp = 1
+    minDist = 295 #270
     p1 = 30    #55 #100
-    p2= 7  #7   #5
-    minR=10
-    maxR=60
+    p2 = 7  #7   #5
+    minR = 10
+    maxR = 60
 
-    img = img[430:img.shape[0]-450, 80:img.shape[1]-200]   #430 400
     imgOrg= img.copy()
     #increase brightness
-    #img = increase_brightness(img)
-    imgGray = cv2.cvtColor(img,cv2.COLOR_BGR2GRAY)
+    img = increase_brightness(img)
+    imgGray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     #adaptive threshold
     imgGray = cv2.medianBlur(imgGray,blur)
     imgGray = cv2.adaptiveThreshold(imgGray,255,cv2.ADAPTIVE_THRESH_GAUSSIAN_C,cv2.THRESH_BINARY_INV,41,3) #41
@@ -48,9 +47,9 @@ def le_hough(img, nb, minV=10,maxV=60):
     kernel = cv2.getStructuringElement(shape=cv2.MORPH_ELLIPSE, ksize=(9,9))
     imgGray = cv2.morphologyEx(imgGray, cv2.MORPH_OPEN, kernel)
 
-    circles = cv2.HoughCircles(imgGray,cv2.HOUGH_GRADIENT,dp,minDist,
+    circles = cv2.HoughCircles(imgGray, cv2.HOUGH_GRADIENT, dp, minDist,
                                 param1=p1,param2=p2,minRadius=minR,maxRadius=maxR)
-    imgCanny=cv2.Canny(imgGray,p1//2,p1)
+    imgCanny = cv2.Canny(imgGray, p1//2, p1)
     nb_c =0
     if( not (circles is None)):
         circles = np.uint16(np.around(circles))
@@ -58,17 +57,31 @@ def le_hough(img, nb, minV=10,maxV=60):
             if i[2] >= minV and i[2] <= maxV:
                 cv2.circle(img,(i[0],i[1]),i[2],(0,255,0),10)
                 cv2.circle(img,(i[0],i[1]),2,(0,0,255),3)
-                nb_c+=1
+                nb_c += 1
+
+    #imgOrg = cv2.resize(imgOrg, (400,600))
+    #img = cv2.resize(img, (400,600))
+    #imgGray = cv2.resize(imgGray, (400,600))
+    #imgCanny = cv2.resize(imgCanny, (400,600))
 
     show = np.concatenate((
         np.concatenate((imgOrg,img),axis=1),
-        cv2.cvtColor(np.concatenate((imgGray,imgCanny),axis=1),cv2.COLOR_GRAY2BGR)
-        ),axis=0)
-    return (show,nb_c)
+        cv2.cvtColor(np.concatenate((imgGray,imgCanny), axis=1),cv2.COLOR_GRAY2BGR)
+        ), axis=0)
+    return show, nb_c, circles
 
 if __name__ == '__main__':
-    nb='25'
-    img = cv2.imread('../..')
+    
+    img = cv2.imread('./Data/Plaque3/Photo/25.jpg')
+
+    
     #pitit pixel
-    (show,nb_c) = le_hough(img, nb,14,19)
-    cv2.imshow(cv2.resize( show, (960,1280) ))
+    show, nb_c, circles = le_hough(img, 14, 60)
+    cv2.imshow("Hole Dectection", cv2.resize(show, (600,800)))
+
+    print(circles)
+
+    cv2.waitKey(0) 
+
+    #closing all open windows 
+    cv2.destroyAllWindows() 
