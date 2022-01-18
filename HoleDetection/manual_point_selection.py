@@ -2,17 +2,18 @@ from matplotlib import colors
 import matplotlib.image as mpimg
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
+from extractHoles import getAllCircles
 
 import numpy as np
 
 
 
-def select_points(nb_points, img_path, points_file_path, edges_file_path, ):
+def select_points(nb_points, img_path, points_file_path, edges_file_path, step_file_path):
     
     def on_click(event, clicked_points, color_list):
 
         u, v = event.xdata, event.ydata
-        clicked_points.append([u, v])
+        clicked_points.append(([u, v]))
 
         print("[*] 2D Point {:d}: ({:.2f}, {:.2f})".format(
                 len(clicked_points), clicked_points[-1][0], clicked_points[-1][1]))
@@ -45,6 +46,12 @@ def select_points(nb_points, img_path, points_file_path, edges_file_path, ):
             Y = (Y1_Ro[ind] + Y2_Ro[ind]) / 2
             Z = (Z1_Ro[ind] + Z2_Ro[ind]) / 2
 
+            
+
+            if not (np.equal(np.array([X, Y, Z]), holes_point_3D).all(axis=1).any() and \
+                [X, Y, Z] not in picked_points_Ro):
+                return True
+
             picked_points_Ro.append([X, Y, Z])
 
             if len(color_list) >= len(picked_points_Ro) > 0:
@@ -74,6 +81,12 @@ def select_points(nb_points, img_path, points_file_path, edges_file_path, ):
     model_points_3DRo = np.loadtxt(points_file_path, dtype=float)
     model_edges = np.loadtxt(edges_file_path, dtype=int)
 
+    with open(step_file_path) as f:
+        file = f.readlines()
+
+    holes_point_3D, diameters = getAllCircles(file, getBothFaces=False)
+
+
     XYZ1_Ro = model_points_3DRo[model_edges[:, 0]]
     XYZ2_Ro = model_points_3DRo[model_edges[:, 1]]
     model3D_Ro = np.concatenate([XYZ1_Ro, XYZ2_Ro], axis=1)
@@ -86,6 +99,7 @@ def select_points(nb_points, img_path, points_file_path, edges_file_path, ):
     fig1 = plt.figure(1)
     ax1, lines = plot_3d_model(model3D_Ro, fig1)
     ax1.set_zlim(-20,20)
+    ax1.scatter(holes_point_3D[:,0], holes_point_3D[:,1], holes_point_3D[:,2], color='green', alpha=0.4)
     fig1.canvas.mpl_connect('pick_event', lambda event: on_pick(event, picked_points_Ro, color_list))  # Listen to mouse click event within figure 1
     plt.show(block=False)
 
@@ -124,4 +138,7 @@ def plot_3d_model(model, fig):
 if __name__ == '__main__':
     select_points(8,    "Data/Plaque1/CameraAIP/capture1.jpg", 
                         "Data/Plaque1/Model/Plaque_1.xyz",
-                        "Data/Plaque1/Model/Plaque_1.edges")
+                        "Data/Plaque1/Model/Plaque_1.edges",
+                        "./Data/Plaque1/Model/Plaque_1.stp")
+
+    
