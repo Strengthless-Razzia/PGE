@@ -72,12 +72,12 @@ def le_hough(img, minV=10,maxV=60):
 
 if __name__ == '__main__':
     
-    img = cv2.imread('./Data/Plaque3/Photo/25.jpg')
+    img = cv2.imread('./Data/Plaque1/CameraAIP/capture.png')
 
     
     #pitit pixel
     show, nb_c, circles = le_hough(img, 14, 60)
-    cv2.imshow("Hole Dectection", cv2.resize(show, (600,800)))
+    cv2.imwrite("./HoleDetection/result.jpg", show)
 
     print(circles)
 
