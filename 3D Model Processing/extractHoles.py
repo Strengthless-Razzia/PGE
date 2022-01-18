@@ -60,7 +60,7 @@ def cleanupSimilar(pos3D, d):
 
 
 def getAllCircles(file, getBothFaces=False):
-    Circles = extractCircles(lines)
+    Circles = extractCircles(file)
     pos_3D = np.zeros([len(Circles),3])
     diameters = np.zeros([len(Circles),1])
 
