@@ -13,12 +13,12 @@ class HoughVisualizationThread(QThread):
     def __init__(self):
         super().__init__()
         self._run_flag = True
-        self.original_image = cv2.imread("./Data/Plaque1/CameraTablette/IMG_20211201_123534_169.jpg")
+        self.original_image = cv2.imread("./Data/Plaque1/CameraAIP/capture3.jpg")
 
         self.p1 = 30
         self.p2 = 7
         self.blur = 5
-        self.dp = 1
+        self.dp = 1.5
         self.minDist = 295 #270
         self.minR = 10
         self.maxR = 60
