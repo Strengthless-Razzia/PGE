@@ -1,4 +1,3 @@
-from matplotlib import colors
 import matplotlib.image as mpimg
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
@@ -114,6 +113,9 @@ def select_points(nb_points, img_path, points_file_path, edges_file_path, step_f
     while not (len(picked_points_Ro) == len(clicked_points) >= nb_points):
         plt.pause(1)
     
+    picked_points_Ro = np.array(picked_points_Ro)
+    clicked_points = np.array(clicked_points)
+
     return picked_points_Ro, clicked_points
 
 
@@ -136,9 +138,17 @@ def plot_3d_model(model, fig):
 
 
 if __name__ == '__main__':
-    select_points(8,    "Data/Plaque1/CameraAIP/capture1.jpg", 
+    picked_points_Ro, clicked_points = select_points(40, "Data/Plaque1/PhotoUnity/plaque=1_position=(0.0, 4900.0, -3000.0)_rotation=(60.0, 0.0, 15.0)_date=2021-11-22_16-34-45.png", 
                         "Data/Plaque1/Model/Plaque_1.xyz",
                         "Data/Plaque1/Model/Plaque_1.edges",
-                        "./Data/Plaque1/Model/Plaque_1.stp")
+                        "Data/Plaque1/Model/Plaque_1.stp")
+    
 
+    with open('HoleDetection/picked_points_Ro_Unity.npy', 'wb') as f:
+        np.save(f, picked_points_Ro, allow_pickle=False)
+
+    with open('HoleDetection/clicked_points_Unity.npy', 'wb') as f:
+        np.save(f, clicked_points, allow_pickle=False)
+
+        
     

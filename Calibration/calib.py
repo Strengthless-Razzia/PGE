@@ -36,11 +36,13 @@ prev_img_shape = None
 # in a given directory. Since no path is
 # specified, it will take current directory
 # jpg files alone
-images = glob.glob('data/Raf_tel/*.jpg')
+images = glob.glob('./Calibration/data/Raf_tel/*.jpg')
 
 for filename in images:
 	image = cv2.imread(filename)
+
 	grayColor = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+	#grayColor = image
 
 	# Find the chess board corners
 	# If desired number of corners are
@@ -81,8 +83,7 @@ h, w = image.shape[:2]
 # passing the value of above found out 3D points (threedpoints)
 # and its corresponding pixel coordinates of the
 # detected corners (twodpoints)
-ret, matrix, distortion, r_vecs, t_vecs = cv2.calibrateCamera(
-	threedpoints, twodpoints, grayColor.shape[::-1], None, None)
+ret, matrix, distortion, r_vecs, t_vecs = cv2.calibrateCamera(threedpoints, twodpoints, grayColor.shape[::-1], None, None)
 
 
 # Displaying required output
