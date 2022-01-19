@@ -6,7 +6,7 @@ Localiser une plaque de type bombée dans le repère monde sans modèle 3D.
 
 ## Etapes
 
-* Callibration de la caméra, récupération des paramètres intrinsèques.
+* Calibration de la caméra, récupération des paramètres intrinsèques.
 * Prise de multiple photo 2D de la plaque bombée dans l'optique de faire une reconstruction 3D.
 * Estimer la position de la plaque bombée dans le repère monde à partir du modèle 3D et d'une séquence d'image 2D.
 
@@ -15,6 +15,8 @@ Localiser une plaque de type bombée dans le repère monde sans modèle 3D.
 
 * https://docs.opencv.org/3.3.1/dc/d2c/tutorial_real_time_pose.html
 * https://www.eecis.udel.edu/~cer/arv/readings/old_mkss.pdf  (An Invitation to 3-D Vision From Images to Models)
+* https://cvgl.stanford.edu/teaching/cs231a_winter1415/prev/projects/CS231a-FinalReport-sgmccann.pdf (3D Reconstruction from Multiple Images Shawn McCann)
+* https://docs.opencv.org/4.x/d4/d18/tutorial_sfm_scene_reconstruction.html (OpenCV Scene reconstruction)
 
-![Alt text](ext.png?raw=true "Paramètres extrinsèques")
 ![Alt text](int.png?raw=true "Paramètres intrinsèques")
+![Alt text](ext.png?raw=true "Paramètres extrinsèques")
