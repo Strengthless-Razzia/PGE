@@ -13,7 +13,7 @@ class HoughVisualizationThread(QThread):
     def __init__(self):
         super().__init__()
         self._run_flag = True
-        self.original_image = cv2.imread("./Data/Plaque1/PhotoUnity/plaque=1_position=(0.0, -2500.0, 0.0)_rotation=(270.0, 0.0, 0.0)_date=2022-01-19_11-31-26.png")
+        self.original_image = cv2.imread("Data/Plaque1/PhotoUnity/plaque=1_position=(0.0, -1800.0, 0.0)_rotation=(270.0, 0.0, 0.0)_date=2022-01-19_14-19-15.png")
 
         self.p1 = 30
         self.p2 = 7
@@ -74,7 +74,7 @@ class HoughVisualizationThread(QThread):
                     cv2.circle(img,(i[0],i[1]),2,(0,0,255),3)
                     nb_c += 1
 
-        return np.concatenate((img, cv2.cvtColor(imgCanny, cv2.COLOR_GRAY2BGR)), axis=1)
+        return np.concatenate((img, cv2.cvtColor(imgCanny, cv2.COLOR_GRAY2BGR)), axis=0)
 
     def run(self):
     
@@ -110,7 +110,7 @@ class App(QWidget):
         super().__init__()
         self.setWindowTitle("Qt hough parametres")
         self.disply_width = 1000
-        self.display_height = 800
+        self.display_height = 600
         # create the label that holds the image
         self.image_label = QLabel(self)
         self.image_label.resize(self.disply_width, self.display_height)

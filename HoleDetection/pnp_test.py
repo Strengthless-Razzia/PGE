@@ -14,9 +14,9 @@ if __name__ == '__main__':
                                     [0.00000000e+00, 1.96741747e+03, 4.87086762e+02],
                                     [0.00000000e+00, 0.00000000e+00, 1.00000000e+00]])
 
-    unity_camera_matrix = np.array([[2592*31*15.75, 0.0,                2592/2],
-                                    [0.0,           1944*31*15.75,    1944/2],
-                                    [0.0,           0.0,                1.0]])
+    unity_camera_matrix = np.array([[2592*31*10.16, 0.0,              2592/2],
+                                    [0.0,           1944*31*10.16,    1944/2],
+                                    [0.0,           0.0,              1.0]])
 
     with open('HoleDetection/picked_points_Ro_Unity.npy', 'rb') as f:
         picked_points_Ro = np.load(f, allow_pickle=False)
@@ -54,7 +54,7 @@ if __name__ == '__main__':
 
     fig1 = plt.figure(1)
     ax1 = fig1.add_subplot(111)
-    plt.imshow(mpimg.imread("./Data/Plaque1/PhotoUnity/plaque=1_position=(0.0, -2500.0, 0.0)_rotation=(270.0, 0.0, 0.0)_date=2022-01-19_11-31-26.png"))
+    plt.imshow(mpimg.imread("./Data/Plaque1/PhotoUnity/plaque=1_position=(0.0, -1800.0, 0.0)_rotation=(270.0, 0.0, 0.0)_date=2022-01-19_14-19-15.png"))
     transform_and_draw_model(model3D_Ro, unity_camera_matrix, extrinsic_mat, ax1)  # 3D model drawing
     plt.show(block=True)
 

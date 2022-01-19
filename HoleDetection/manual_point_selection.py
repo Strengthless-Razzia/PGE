@@ -138,7 +138,7 @@ def plot_3d_model(model, fig):
 
 
 if __name__ == '__main__':
-    picked_points_Ro, clicked_points = select_points(40, "./Data/Plaque1/PhotoUnity/plaque=1_position=(0.0, -2500.0, 0.0)_rotation=(270.0, 0.0, 0.0)_date=2022-01-19_11-31-26.png", 
+    picked_points_Ro, clicked_points = select_points(40, "./Data/Plaque1/PhotoUnity/plaque=1_position=(0.0, -1800.0, 0.0)_rotation=(270.0, 0.0, 0.0)_date=2022-01-19_14-19-15.png", 
                         "Data/Plaque1/Model/Plaque_1.xyz",
                         "Data/Plaque1/Model/Plaque_1.edges",
                         "Data/Plaque1/Model/Plaque_1.stp")
