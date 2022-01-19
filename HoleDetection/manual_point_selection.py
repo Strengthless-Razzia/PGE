@@ -144,10 +144,10 @@ if __name__ == '__main__':
                         "Data/Plaque1/Model/Plaque_1.stp")
     
 
-    with open('HoleDetection/picked_points_Ro_Unity.npy', 'wb') as f:
+    with open('HoleDetection/Points2D/picked_points_Ro_Unity1.npy', 'wb') as f:
         np.save(f, picked_points_Ro, allow_pickle=False)
 
-    with open('HoleDetection/clicked_points_Unity.npy', 'wb') as f:
+    with open('HoleDetection/Points3D/clicked_points_Unity1.npy', 'wb') as f:
         np.save(f, clicked_points, allow_pickle=False)
 
         

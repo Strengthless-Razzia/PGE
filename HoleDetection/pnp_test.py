@@ -18,10 +18,10 @@ if __name__ == '__main__':
                                     [0.0,           1944*31*10.16,    1944/2],
                                     [0.0,           0.0,              1.0]])
 
-    with open('HoleDetection/picked_points_Ro_Unity.npy', 'rb') as f:
+    with open('HoleDetection/Points2D/picked_points_Ro_Unity.npy', 'rb') as f:
         picked_points_Ro = np.load(f, allow_pickle=False)
 
-    with open('HoleDetection/clicked_points_Unity.npy', 'rb') as f:
+    with open('HoleDetection/Points3D/clicked_points_Unity.npy', 'rb') as f:
         clicked_points = np.load(f, allow_pickle=False)
 
     #print(picked_points_Ro)
