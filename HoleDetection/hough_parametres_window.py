@@ -13,7 +13,7 @@ class HoughVisualizationThread(QThread):
     def __init__(self):
         super().__init__()
         self._run_flag = True
-        self.original_image = cv2.imread("./Data/Plaque1/CameraTablette/IMG_20211201_123525_040.jpg")
+        self.original_image = cv2.imread("./Data/Plaque1/PhotoUnity/plaque=1_position=(0.0, -6000.0, 0.0)_rotation=(270.0, 0.0, 0.0)_date=2022-01-19_11-14-53.png")
 
         self.p1 = 30
         self.p2 = 7
