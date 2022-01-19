@@ -16,5 +16,5 @@ Localiser une plaque de type bombée dans le repère monde sans modèle 3D.
 * https://docs.opencv.org/3.3.1/dc/d2c/tutorial_real_time_pose.html
 * https://www.eecis.udel.edu/~cer/arv/readings/old_mkss.pdf  (An Invitation to 3-D Vision From Images to Models)
 
-![Alt text](PLAQUE_BOMBEE/ext.png?raw=true "Paramètres extrinsèques")
-![Alt text](PLAQUE_BOMBEE/int.png?raw=true "Paramètres intrinsèques")
+![Alt text](github.com/Strengthless-Razzia/PGE/blob/Remi2/PLAQUE_BOMBEE/ext.png?raw=true "Paramètres extrinsèques")
+![Alt text](github.com/Strengthless-Razzia/PGE/blob/Remi2/PLAQUE_BOMBEE/int.png?raw=true "Paramètres intrinsèques")
