@@ -1,5 +1,5 @@
 from PyQt5 import QtGui
-from PyQt5.QtWidgets import QWidget, QApplication, QLabel, QVBoxLayout
+from PyQt5.QtWidgets import QWidget, QApplication, QLabel, QVBoxLayout, QHBoxLayout
 from PyQt5.QtGui import QPixmap
 import sys
 import cv2
@@ -13,7 +13,7 @@ class HoughVisualizationThread(QThread):
     def __init__(self):
         super().__init__()
         self._run_flag = True
-        self.original_image = cv2.imread("./Data/Plaque1/CameraAIP/capture3.jpg")
+        self.original_image = cv2.imread("./Data/Plaque1/CameraTablette/IMG_20211201_123525_040.jpg")
 
         self.p1 = 30
         self.p2 = 7
@@ -24,6 +24,7 @@ class HoughVisualizationThread(QThread):
         self.maxR = 60
         self.minV = 10
         self.maxV = 60
+        self.brightness_value = 10
     
     def increase_brightness(self, img, value=10):
         hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
@@ -49,7 +50,7 @@ class HoughVisualizationThread(QThread):
 
     def hough(self):
         #increase brightness
-        img = self.increase_brightness(self.original_image.copy())
+        img = self.increase_brightness(self.original_image.copy(), value=self.brightness_value)
         imgGray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
         #adaptive threshold
         imgGray = cv2.medianBlur(imgGray, self.blur)
@@ -100,13 +101,16 @@ class HoughVisualizationThread(QThread):
     def update_minDist(self, minDist):
         self.maxminDist = int(minDist)
 
+    def update_brightness_value(self, brightness_value):
+        self.brightness_value = int(brightness_value)
+
 
 class App(QWidget):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Qt hough parametres")
         self.disply_width = 1000
-        self.display_height = 400
+        self.display_height = 800
         # create the label that holds the image
         self.image_label = QLabel(self)
         self.image_label.resize(self.disply_width, self.display_height)
@@ -120,11 +124,13 @@ class App(QWidget):
         self.minR_slider = CustomSlider(10, 0, 100, "minR")
         self.maxR_slider = CustomSlider(60, 0, 100, "maxR")
         self.minDist_slider = CustomSlider(295, 0, 500, "minDist")
-
+        self.brightness_value_slider = CustomSlider(10, 0, 100, "brightness")
 
         # create a vertical box layout and add the two labels and sliders
+        mainbox = QHBoxLayout()
+        mainbox.addWidget(self.image_label)
+
         vbox = QVBoxLayout()
-        vbox.addWidget(self.image_label)
         vbox.addWidget(self.textLabel)
         
         vbox.addWidget(self.p1_slider)
@@ -133,8 +139,10 @@ class App(QWidget):
         vbox.addWidget(self.minR_slider)
         vbox.addWidget(self.maxR_slider)
         vbox.addWidget(self.minDist_slider)
+        vbox.addWidget(self.brightness_value_slider)
         # set the vbox layout as the widgets layout
-        self.setLayout(vbox)
+        mainbox.addLayout(vbox)
+        self.setLayout(mainbox)
 
         # create the video capture thread
         self.thread = HoughVisualizationThread()
@@ -147,6 +155,7 @@ class App(QWidget):
         self.minR_slider.valueChangedSignal.connect(self.thread.update_minR)
         self.maxR_slider.valueChangedSignal.connect(self.thread.update_maxR)
         self.minDist_slider.valueChangedSignal.connect(self.thread.update_minDist)
+        self.brightness_value_slider.valueChangedSignal.connect(self.thread.update_brightness_value)
         # start the thread
         self.thread.start()
 
