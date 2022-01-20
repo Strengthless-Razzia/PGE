@@ -18,14 +18,20 @@ if __name__ == '__main__':
                                     [0.0,           1944*31*10.16,    1944/2],
                                     [0.0,           0.0,              1.0]])
 
-    with open('HoleDetection/Points2D/picked_points_Ro_Unity.npy', 'rb') as f:
+    with open('HoleDetection/Points3D/picked_points_Ro_Unity.npy', 'rb') as f:
         picked_points_Ro = np.load(f, allow_pickle=False)
 
-    with open('HoleDetection/Points3D/clicked_points_Unity.npy', 'rb') as f:
+    with open('HoleDetection/Points2D/clicked_points_Unity.npy', 'rb') as f:
         clicked_points = np.load(f, allow_pickle=False)
 
     #print(picked_points_Ro)
     #print(clicked_points)
+
+    #random_index = np.unique(np.random.randint(len(picked_points_Ro), size=10))
+    #print(random_index)
+
+    #clicked_points = np.delete(clicked_points, obj=random_index, axis=0)
+    #picked_points_Ro = np.delete(picked_points_Ro, obj=random_index, axis=0)
 
     dist_coeffs = np.zeros((4,1))
 
@@ -39,6 +45,7 @@ if __name__ == '__main__':
     print("Sucess :", success)
     print("Rotation vect :\n", rotation_vector)
     print("Translation vect :\n", translation_vector)
+    print("Iniliers \n", )
 
     extrinsic_mat = construct_matrix_from_vec(np.concatenate([rotation_vector, translation_vector]))
 
@@ -56,6 +63,10 @@ if __name__ == '__main__':
     ax1 = fig1.add_subplot(111)
     plt.imshow(mpimg.imread("./Data/Plaque1/PhotoUnity/plaque=1_position=(0.0, -1800.0, 0.0)_rotation=(270.0, 0.0, 0.0)_date=2022-01-19_14-19-15.png"))
     transform_and_draw_model(model3D_Ro, unity_camera_matrix, extrinsic_mat, ax1)  # 3D model drawing
+
+    plt.scatter(clicked_points[:, 0], clicked_points[:, 1], marker='x', color='g')
+
+
     plt.show(block=True)
 
 
