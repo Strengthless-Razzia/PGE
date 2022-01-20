@@ -44,7 +44,7 @@ def getAllCircles(file, getBothFaces=False):
     Circles = extractCircles(file)
     pos_3D = np.zeros([len(Circles),3])
     diameters = np.zeros([len(Circles),1])
-
+    results = np.zeros([len(Circles),4])
 
     for i in range(len(Circles)):
         [currentPos, currentD] = parseCircle(Circles[i],file)    
