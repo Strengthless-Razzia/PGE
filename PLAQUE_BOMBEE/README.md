@@ -6,7 +6,7 @@ Localiser une plaque de type bombée dans le repère monde sans modèle 3D.
 
 ## Etapes
 
-* Calibration de la caméra, récupération des paramètres intrinsèques.
+* [Calibration](https://github.com/Strengthless-Razzia/PGE/tree/Remi2/PLAQUE_BOMBEE/calibration) de la caméra, récupération des paramètres intrinsèques avec [calib.py](https://github.com/Strengthless-Razzia/PGE/blob/Remi2/PLAQUE_BOMBEE/calibration/calib.py).
 * Prise de multiple photo 2D de la plaque bombée dans l'optique de faire une reconstruction 3D.
 * Estimer la position de la plaque bombée dans le repère monde à partir du modèle 3D et d'une séquence d'image 2D.
 
