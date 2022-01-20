@@ -17,6 +17,16 @@ if __name__ == '__main__':
     unity_camera_matrix = np.array([[2592*31*10.16, 0.0,              2592/2],
                                     [0.0,           1944*31*10.16,    1944/2],
                                     [0.0,           0.0,              1.0]])
+    
+    unity_calibration_camera_matrix = np.array([[1.69595869e+04, 0.00000000e+00, 1.08942376e+03],
+                                                [0.00000000e+00, 1.15226265e+04, 9.19251195e+02],
+                                                [0.00000000e+00, 0.00000000e+00, 1.00000000e+00]])
+
+    unity_distortion_coef = np.array([  -1.18224645e+01,  
+                                        1.82848852e+03,  
+                                        6.38818148e-01, 
+                                        -1.59879765e-01,
+                                        -6.28018049e+04])
 
     with open('HoleDetection/Points3D/picked_points_Ro_Unity.npy', 'rb') as f:
         picked_points_Ro = np.load(f, allow_pickle=False)
@@ -24,14 +34,15 @@ if __name__ == '__main__':
     with open('HoleDetection/Points2D/clicked_points_Unity.npy', 'rb') as f:
         clicked_points = np.load(f, allow_pickle=False)
 
-    #print(picked_points_Ro)
+    #print(picked_points_Ro)  
     #print(clicked_points)
 
-    #random_index = np.unique(np.random.randint(len(picked_points_Ro), size=10))
+    random_index = np.unique(np.random.randint(len(picked_points_Ro), size=20))
     #print(random_index)
-
-    #clicked_points = np.delete(clicked_points, obj=random_index, axis=0)
-    #picked_points_Ro = np.delete(picked_points_Ro, obj=random_index, axis=0)
+    
+    #Delete random points
+    clicked_points = np.delete(clicked_points, obj=random_index, axis=0)
+    picked_points_Ro = np.delete(picked_points_Ro, obj=random_index, axis=0)
 
     dist_coeffs = np.zeros((4,1))
 
@@ -39,13 +50,12 @@ if __name__ == '__main__':
         picked_points_Ro, 
         clicked_points, 
         unity_camera_matrix, 
-        dist_coeffs,
+        unity_distortion_coef,
         flags=0)
 
     print("Sucess :", success)
     print("Rotation vect :\n", rotation_vector)
     print("Translation vect :\n", translation_vector)
-    print("Iniliers \n", )
 
     extrinsic_mat = construct_matrix_from_vec(np.concatenate([rotation_vector, translation_vector]))
 
