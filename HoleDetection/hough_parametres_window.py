@@ -8,9 +8,7 @@ import numpy as np
 from slider_widget import CustomSlider
 
 from hough_visualization_thread import HoughVisualizationThread
-
-
-
+from pnp_result_visualization import PNPResultVisualizationWidget, PNPResultVisualizationThread
 
 
 class App(QWidget):
@@ -50,25 +48,36 @@ class App(QWidget):
         vbox.addWidget(self.brightness_value_slider)
         # set the vbox layout as the widgets layout
         mainbox.addLayout(vbox)
+
+        self.pnp_widget = PNPResultVisualizationWidget()
+
+        mainbox.addWidget(self.pnp_widget)
+
         self.setLayout(mainbox)
 
         # create the video capture thread
-        self.thread = HoughVisualizationThread()
+        self.threadHough = HoughVisualizationThread()
+        self.threadPNP = PNPResultVisualizationThread(self.pnp_widget.axes)
         # connect its signal to the update_image slot
-        self.thread.change_pixmap_signal.connect(self.update_image)
+        self.threadHough.change_pixmap_signal.connect(self.update_image)
+        self.threadHough.change_points_signal.connect(self.threadPNP.update_image_points)
+        self.threadPNP.update_plot_signal.connect(self.pnp_widget.update_canvas)
+        
         # connect sliders
 
-        self.p1_slider.valueChangedSignal.connect(self.thread.update_p1)
-        self.p2_slider.valueChangedSignal.connect(self.thread.update_p2)
-        self.minR_slider.valueChangedSignal.connect(self.thread.update_minR)
-        self.maxR_slider.valueChangedSignal.connect(self.thread.update_maxR)
-        self.minDist_slider.valueChangedSignal.connect(self.thread.update_minDist)
-        self.brightness_value_slider.valueChangedSignal.connect(self.thread.update_brightness_value)
+        self.p1_slider.valueChangedSignal.connect(self.threadHough.update_p1)
+        self.p2_slider.valueChangedSignal.connect(self.threadHough.update_p2)
+        self.minR_slider.valueChangedSignal.connect(self.threadHough.update_minR)
+        self.maxR_slider.valueChangedSignal.connect(self.threadHough.update_maxR)
+        self.minDist_slider.valueChangedSignal.connect(self.threadHough.update_minDist)
+        self.brightness_value_slider.valueChangedSignal.connect(self.threadHough.update_brightness_value)
         # start the thread
-        self.thread.start()
+        self.threadHough.start()
+        self.threadPNP.start()
 
     def closeEvent(self, event):
-        self.thread.stop()
+        self.threadHough.stop()
+        self.threadPNP.stop()
         event.accept()
 
 

@@ -4,6 +4,7 @@ import numpy as np
 
 class HoughVisualizationThread(QThread):
     change_pixmap_signal = pyqtSignal(np.ndarray)
+    change_points_signal = pyqtSignal(np.ndarray)
 
     def __init__(self):
         super().__init__()
@@ -69,12 +70,14 @@ class HoughVisualizationThread(QThread):
                     cv2.circle(img,(i[0],i[1]),2,(0,0,255),3)
                     nb_c += 1
 
-        return np.concatenate((img, cv2.cvtColor(imgCanny, cv2.COLOR_GRAY2BGR)), axis=1)
+        return np.concatenate((img, cv2.cvtColor(imgCanny, cv2.COLOR_GRAY2BGR)), axis=1), circles[0,:]
 
     def run(self):
     
         while self._run_flag:
-            self.change_pixmap_signal.emit(self.hough())
+            image, points = self.hough()
+            self.change_pixmap_signal.emit(image)
+            self.change_points_signal.emit(points)
 
     def stop(self):
         """Sets run flag to False and waits for thread to finish"""
