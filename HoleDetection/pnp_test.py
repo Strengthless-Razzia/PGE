@@ -3,6 +3,7 @@ import cv2
 from matUtils import *
 import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
+import random 
 
 if __name__ == '__main__':
     
@@ -41,12 +42,16 @@ if __name__ == '__main__':
     #print(random_index)
     
     #Delete random points
-    clicked_points = np.delete(clicked_points, obj=random_index, axis=0)
-    picked_points_Ro = np.delete(picked_points_Ro, obj=random_index, axis=0)
+    #clicked_points = np.delete(clicked_points, obj=random_index, axis=0)
+    #picked_points_Ro = np.delete(picked_points_Ro, obj=random_index, axis=0)
 
-    dist_coeffs = np.zeros((4,1))
+    #shuffle les listes pour le RanSac 
+    random.shuffle(clicked_points)
+    random.shuffle(picked_points_Ro)
+    
+    #dist_coeffs = np.zeros((4,1))
 
-    success, rotation_vector, translation_vector = cv2.solvePnP(
+    success, rotation_vector, translation_vector, outliers = cv2.solvePnPRansac(
         picked_points_Ro, 
         clicked_points, 
         unity_camera_matrix, 
@@ -54,8 +59,6 @@ if __name__ == '__main__':
         flags=0)
 
     print("Sucess :", success)
-    print("Rotation vect :\n", rotation_vector)
-    print("Translation vect :\n", translation_vector)
 
     extrinsic_mat = construct_matrix_from_vec(np.concatenate([rotation_vector, translation_vector]))
 
