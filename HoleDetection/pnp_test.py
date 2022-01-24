@@ -40,16 +40,16 @@ if __name__ == '__main__':
     
     dist_coeffs = np.zeros((4,1))
 
-    with open('HoleDetection/Points3D/picked_points_Ro_Cognex.npy', 'rb') as f:
+    with open('HoleDetection/Points3D/picked_points_Ro_Cognex6.npy', 'rb') as f:
         picked_points_Ro = np.load(f, allow_pickle=False)
 
-    with open('HoleDetection/Points2D/clicked_points_Cognex.npy', 'rb') as f:
+    with open('HoleDetection/Points2D/clicked_points_Cognex6.npy', 'rb') as f:
         clicked_points = np.load(f, allow_pickle=False)
 
     #print(picked_points_Ro)  
     #print(clicked_points)
 
-    random_index = np.unique(np.random.randint(len(picked_points_Ro), size=10))
+    random_index = np.unique(np.random.randint(len(picked_points_Ro), size=0))
     #print(random_index)
     
     #Delete random points
@@ -83,7 +83,7 @@ if __name__ == '__main__':
 
     fig1 = plt.figure(1)
     ax1 = fig1.add_subplot(111)
-    plt.imshow(mpimg.imread("./Data/Plaque1/Cognex/image1.bmp"))
+    plt.imshow(mpimg.imread("./Data/Plaque1/Cognex/image6.bmp"))
     transform_and_draw_model(model3D_Ro, cognex_calibration_camera_matrix, extrinsic_mat, ax1)  # 3D model drawing
 
     plt.scatter(clicked_points[:, 0], clicked_points[:, 1], marker='x', color='g')

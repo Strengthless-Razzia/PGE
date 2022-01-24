@@ -138,16 +138,16 @@ def plot_3d_model(model, fig):
 
 
 if __name__ == '__main__':
-    picked_points_Ro, clicked_points = select_points(4, "./Data/Plaque1/Cognex/image1.bmp", 
+    picked_points_Ro, clicked_points = select_points(4, "./Data/Plaque1/Cognex/image6.bmp", 
                         "Data/Plaque1/Model/Plaque_1.xyz",
                         "Data/Plaque1/Model/Plaque_1.edges",
                         "Data/Plaque1/Model/Plaque_1.stp")
     
 
-    with open('HoleDetection/Points3D/picked_points_Ro_Cognex.npy', 'wb') as f:
+    with open('HoleDetection/Points3D/picked_points_Ro_Cognex6.npy', 'wb') as f:
         np.save(f, picked_points_Ro, allow_pickle=False)
 
-    with open('HoleDetection/Points2D/clicked_points_Cognex.npy', 'wb') as f:
+    with open('HoleDetection/Points2D/clicked_points_Cognex6.npy', 'wb') as f:
         np.save(f, clicked_points, allow_pickle=False)
 
         
