@@ -22,9 +22,9 @@ if __name__ == '__main__':
                                                 [0.00000000e+00, 1.15226265e+04, 9.19251195e+02],
                                                 [0.00000000e+00, 0.00000000e+00, 1.00000000e+00]])
 
-    cognex_calibration_camera_matrix = [[4.95789049e+03, 0.00000000e+00, 1.39806998e+03],
-                                        [0.00000000e+00, 4.90165198e+03, 6.86145950e+02],
-                                        [0.00000000e+00, 0.00000000e+00, 1.00000000e+00]]
+    cognex_calibration_camera_matrix = np.array([[4.95789049e+03, 0.00000000e+00, 1.39806998e+03],
+                                                [0.00000000e+00, 4.90165198e+03, 6.86145950e+02],
+                                                [0.00000000e+00, 0.00000000e+00, 1.00000000e+00]])
 
     unity_distortion_coef = np.array([  -1.18224645e+01,  
                                         1.82848852e+03,  
@@ -37,30 +37,32 @@ if __name__ == '__main__':
                                         -0.00787018, 
                                         0.01009623, 
                                         -7.61314684])
+    
+    dist_coeffs = np.zeros((4,1))
 
-    with open('HoleDetection/Points3D/picked_points_Ro_Unity.npy', 'rb') as f:
+    with open('HoleDetection/Points3D/picked_points_Ro_Cognex.npy', 'rb') as f:
         picked_points_Ro = np.load(f, allow_pickle=False)
 
-    with open('HoleDetection/Points2D/clicked_points_Unity.npy', 'rb') as f:
+    with open('HoleDetection/Points2D/clicked_points_Cognex.npy', 'rb') as f:
         clicked_points = np.load(f, allow_pickle=False)
 
     #print(picked_points_Ro)  
     #print(clicked_points)
 
-    random_index = np.unique(np.random.randint(len(picked_points_Ro), size=20))
+    random_index = np.unique(np.random.randint(len(picked_points_Ro), size=10))
     #print(random_index)
     
     #Delete random points
     clicked_points = np.delete(clicked_points, obj=random_index, axis=0)
     picked_points_Ro = np.delete(picked_points_Ro, obj=random_index, axis=0)
 
-    dist_coeffs = np.zeros((4,1))
+    
 
     success, rotation_vector, translation_vector = cv2.solvePnP(
         picked_points_Ro, 
         clicked_points, 
-        unity_camera_matrix, 
-        unity_distortion_coef,
+        cognex_calibration_camera_matrix, 
+        cognex_distortion_coef,
         flags=0)
 
     print("Sucess :", success)
@@ -81,8 +83,8 @@ if __name__ == '__main__':
 
     fig1 = plt.figure(1)
     ax1 = fig1.add_subplot(111)
-    plt.imshow(mpimg.imread("./Data/Plaque1/PhotoUnity/plaque=1_position=(0.0, -1800.0, 0.0)_rotation=(270.0, 0.0, 0.0)_date=2022-01-19_14-19-15.png"))
-    transform_and_draw_model(model3D_Ro, unity_camera_matrix, extrinsic_mat, ax1)  # 3D model drawing
+    plt.imshow(mpimg.imread("./Data/Plaque1/Cognex/image1.bmp"))
+    transform_and_draw_model(model3D_Ro, cognex_calibration_camera_matrix, extrinsic_mat, ax1)  # 3D model drawing
 
     plt.scatter(clicked_points[:, 0], clicked_points[:, 1], marker='x', color='g')
 
