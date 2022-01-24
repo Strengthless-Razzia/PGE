@@ -22,11 +22,21 @@ if __name__ == '__main__':
                                                 [0.00000000e+00, 1.15226265e+04, 9.19251195e+02],
                                                 [0.00000000e+00, 0.00000000e+00, 1.00000000e+00]])
 
+    cognex_calibration_camera_matrix = [[4.95789049e+03, 0.00000000e+00, 1.39806998e+03],
+                                        [0.00000000e+00, 4.90165198e+03, 6.86145950e+02],
+                                        [0.00000000e+00, 0.00000000e+00, 1.00000000e+00]]
+
     unity_distortion_coef = np.array([  -1.18224645e+01,  
                                         1.82848852e+03,  
                                         6.38818148e-01, 
                                         -1.59879765e-01,
                                         -6.28018049e+04])
+
+    cognex_distortion_coef = np.array([-0.11133023,  
+                                        1.96562876, 
+                                        -0.00787018, 
+                                        0.01009623, 
+                                        -7.61314684])
 
     with open('HoleDetection/Points3D/picked_points_Ro_Unity.npy', 'rb') as f:
         picked_points_Ro = np.load(f, allow_pickle=False)
