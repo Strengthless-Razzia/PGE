@@ -9,7 +9,7 @@ class HoughVisualizationThread(QThread):
     def __init__(self):
         super().__init__()
         self._run_flag = True
-        self.original_image = cv2.imread("./Data/Plaque1/Cognex/image6.bmp")
+        self.original_image = cv2.imread("./Data/Plaque1/Cognex/image4.bmp")
 
         self.p1 = 30
         self.p2 = 30
