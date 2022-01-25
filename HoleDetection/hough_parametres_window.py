@@ -1,6 +1,6 @@
 from PyQt5 import QtGui
-from PyQt5.QtWidgets import QWidget, QApplication, QLabel, QVBoxLayout, QHBoxLayout
-from PyQt5.QtGui import QPixmap
+from PyQt5.QtWidgets import QWidget, QApplication, QLabel, QVBoxLayout, QPushButton, QCheckBox
+from PyQt5.QtGui import QPixmap, QFont
 import sys
 import cv2
 from PyQt5.QtCore import pyqtSlot, Qt
@@ -49,6 +49,20 @@ class App(QWidget):
         # set the vbox layout as the widgets layout
         mainbox.addLayout(vbox)
 
+        solvePNPButton = QPushButton("SOLVE PNP BATARD", self)
+        solvePNPButton.setFixedHeight(100)
+        solvePNPButton.setStyleSheet("background-color: red; color: white")
+        font_button = QFont('Times', 20)
+        font_button.setBold(True)
+        solvePNPButton.setFont(font_button)
+        
+        mainbox.addWidget(solvePNPButton)
+
+        draw_pnp_result_checkbox = QCheckBox(self)
+        draw_pnp_result_checkbox.setText("Draw Model on Image")
+
+        mainbox.addWidget(draw_pnp_result_checkbox)
+
         self.pnp_widget = PNPResultVisualizationWidget()
 
         mainbox.addWidget(self.pnp_widget)
@@ -63,6 +77,8 @@ class App(QWidget):
         self.threadHough.change_points_signal.connect(self.threadPNP.update_image_points)
         self.threadPNP.update_plot_signal.connect(self.pnp_widget.update_canvas)
         
+        solvePNPButton.clicked.connect(self.threadPNP.process_pnp)
+        draw_pnp_result_checkbox.stateChanged.connect(self.threadPNP.update_draw_model_pnp_result)
         # connect sliders
 
         self.p1_slider.valueChangedSignal.connect(self.threadHough.update_p1)

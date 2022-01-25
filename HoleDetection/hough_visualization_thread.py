@@ -12,7 +12,7 @@ class HoughVisualizationThread(QThread):
         self.original_image = cv2.imread("./Data/Plaque1/Cognex/image1.bmp")
 
         self.p1 = 30
-        self.p2 = 7
+        self.p2 = 30
         self.blur = 5
         self.dp = 1.5
         self.minDist = 295 #270

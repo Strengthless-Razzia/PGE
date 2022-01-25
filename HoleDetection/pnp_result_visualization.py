@@ -26,6 +26,7 @@ class PNPResultVisualizationWidget(QWidget):
     def update_canvas(self):
         self.canvas.draw()
 
+
 class PNPResultVisualizationThread(QThread):
 
     update_plot_signal = pyqtSignal()
@@ -34,8 +35,9 @@ class PNPResultVisualizationThread(QThread):
         super().__init__()
         self._run_flag = True
         self.fig = fig
+        self.draw_model_pnp_result = False
         
-        self.image_points = np.array([[0.,0.], [1., 1.], [2., 2.], [3., 3.]])
+        self.image_points = np.zeros((2,2))
 
         self.distortion_coefs =  np.array([ -0.11133023,  
                                             1.96562876, 
@@ -54,7 +56,6 @@ class PNPResultVisualizationThread(QThread):
         
         # Si tu t'attends a un commentaire pour comprendre cette ligne c'est mort
         self.holes_point_3D = array[array[:, 3].argsort()][::-1][:, :3]
-        
 
         model_points_3DRo = np.loadtxt("Data/Plaque1/Model/Plaque_1.xyz", dtype=float)
         model_edges = np.loadtxt("Data/Plaque1/Model/Plaque_1.edges", dtype=int)
@@ -62,17 +63,46 @@ class PNPResultVisualizationThread(QThread):
         XYZ1_Ro = model_points_3DRo[model_edges[:, 0]]
         XYZ2_Ro = model_points_3DRo[model_edges[:, 1]]
         self.model3D_Ro = np.concatenate([XYZ1_Ro, XYZ2_Ro], axis=1)
+    
+        X1_Ro, Y1_Ro, Z1_Ro = XYZ1_Ro[:, 0], XYZ1_Ro[:, 1], XYZ1_Ro[:, 2]
+        X2_Ro, Y2_Ro, Z2_Ro = XYZ2_Ro[:, 0], XYZ2_Ro[:, 1], XYZ2_Ro[:, 2]
 
-        
-        self.axes3D = plot_3d_model(self.model3D_Ro, self.fig, sub=211)[0]
+        def on_pick(event, picked_points_Ro):
+            
+            if event.artist in lines:
+                
+                ind = lines.index(event.artist)
+                
+                X = (X1_Ro[ind] + X2_Ro[ind]) / 2
+                Y = (Y1_Ro[ind] + Y2_Ro[ind]) / 2
+                Z = (Z1_Ro[ind] + Z2_Ro[ind]) / 2
+                Z = 1.84
+                if not (np.equal(np.array([X, Y]), 
+                self.holes_point_3D[:,:2]).all(axis=1).any() and \
+                    [X, Y, Z] not in picked_points_Ro):
+                    return True
+
+                
+                picked_points_Ro.append([X, Y, Z])
+
+                self.axes3D.scatter(X, Y, Z, color='red', marker='x')
+                self.axes3D.text(X, Y, Z, str(len(picked_points_Ro)), color='red')
+                
+
+                print("[*] 3D Point {:d}: ({:.2f}, {:.2f}, {:.2f})".format(
+                    len(picked_points_Ro), X, Y, Z))
+
+        self.picked_lines_RO = []
+        self.axes3D, lines = plot_3d_model(self.model3D_Ro, self.fig, sub=211)
         self.axes3D.set_zlim(-20,20)
-        self.scat = self.axes3D.scatter(self.holes_point_3D[:,0], self.holes_point_3D[:,1], self.holes_point_3D[:,2], color='green', alpha=0.4)
+        #A Modifier 
+        self.fig.canvas.mpl_connect('pick_event', lambda event: on_pick(event, self.picked_lines_RO))  # Listen to mouse click event within figure 1
         self.axes2D = self.fig.add_subplot(212)
 
     def run(self):
     
         while self._run_flag:
-            self.process_pnp()
+            #self.process_pnp()
             self.draw_model()
             self.update_plot_signal.emit()
             self.sleep(2)
@@ -87,35 +117,34 @@ class PNPResultVisualizationThread(QThread):
         #print("Updated points :", points)
 
     def process_pnp(self):
-        #print("Process pnp")
-        # A changer
-        holes_point_3D = self.holes_point_3D[:self.image_points.shape[0],:]
+        
+        object_points = np.array(self.picked_lines_RO)
+        image_points = self.image_points[:object_points.shape[0],:]
 
-        success, rotation_vector, translation_vector, inliners = cv2.solvePnPRansac(
-            holes_point_3D,
-            self.image_points,
+        success, rotation_vector, translation_vector = cv2.solvePnP(
+            object_points,
+            image_points,
             self.intrinsic_mat,
             self.distortion_coefs,
             flags=0)
         
-        #print("Success :", success)
+        print("Success :", success)
 
         self.extrinsic_mat = construct_matrix_from_vec(np.concatenate([rotation_vector, translation_vector]))
-
+    
+    def update_draw_model_pnp_result(self, state):
+        self.draw_model_pnp_result = state == 2
 
     def draw_model(self):
         #print("Draw model")
         self.axes2D.cla()
         self.axes2D.imshow(mpimg.imread("./Data/Plaque1/Cognex/image1.bmp"))
-        transform_and_draw_model(self.model3D_Ro, self.intrinsic_mat, self.extrinsic_mat, self.axes2D)  # 3D model drawing
+        if self.draw_model_pnp_result:
+            transform_and_draw_model(self.model3D_Ro, self.intrinsic_mat, self.extrinsic_mat, self.axes2D)  # 3D model drawing
 
         self.axes2D.scatter(self.image_points[:, 0], self.image_points[:, 1], marker='x', color='r')
-        self.scat.remove()
-        self.scat = self.axes3D.scatter(
-            self.holes_point_3D[:self.image_points.shape[0],0], 
-            self.holes_point_3D[:self.image_points.shape[0],1], 
-            self.holes_point_3D[:self.image_points.shape[0],2], 
-            color='red', alpha=0.7, marker='x')
+        for i, point in enumerate(self.image_points):
+            self.axes2D.text(point[0], point[1], str(i+1), color='white')
 
         
 
