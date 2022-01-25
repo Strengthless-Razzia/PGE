@@ -8,6 +8,7 @@ import matplotlib.image as mpimg
 from mpl_toolkits.mplot3d import Axes3D
 from matUtils import *
 import cv2
+from pnp_from_scratch import pnp
 
 class PNPResultVisualizationWidget(QWidget):
     """
@@ -167,6 +168,12 @@ class PNPResultVisualizationThread(QThread):
         image_points = self.image_points[:object_points.shape[0],:]
 
 
+        rotation_matrix, t_vec = pnp(object_points, image_points, self.intrinsic_mat)
+
+        self.extrinsic_mat_remi = np.ones((4, 4))
+        self.extrinsic_mat_remi[:3,:3] = rotation_matrix
+        self.extrinsic_mat_remi[:3,3] = t_vec.T
+
         success, rotation_vector, translation_vector = cv2.solvePnP(
             object_points,
             image_points,
@@ -174,10 +181,15 @@ class PNPResultVisualizationThread(QThread):
             self.distortion_coefs,
             flags=0)
         
-        print("Success :", success)
+        #print("Success :", success)
 
         self.extrinsic_mat = construct_matrix_from_vec(np.concatenate([rotation_vector, translation_vector]))
-    
+
+        print("Extrinseque Remi \n", self.extrinsic_mat_remi)
+        print("Extrinseque Opencv \n", self.extrinsic_mat)
+
+        #self.extrinsic_mat = self.extrinsic_mat_remi
+
     def update_draw_model_pnp_result(self, state):
         self.draw_model_pnp_result = state == 2
     
