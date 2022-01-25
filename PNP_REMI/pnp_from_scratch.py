@@ -1,3 +1,4 @@
+
 import numpy as np
 import itertools
 import cv2
@@ -26,10 +27,31 @@ Intrinsec = np.array([[4.957e03, 0, 1.398e03],
                         [0, 0, 1]])
 
 
-#/////////////////#
-#//  Fonctions  //#
-#/////////////////#
-def pnp(Point3D,Point2D,IntrinsicMat):
+#/////////////////////#
+#//  Fonctions PNP  //#
+#/////////////////////#
+#
+# INPUT:
+#   Point3D   (6 points 3D)
+#   Point2D   (6 points 2D)
+#   IntrinsicMat
+#
+# OUTPUT:
+#   Matrice de Rotation
+#   Vecteur de Translation
+#
+def pnp(Point3D,Point2D,IntrinsicMat,debug=False):
+    
+    nbPoint,notusedvalue = Point3D.shape
+    max = nbPoint - 6
+    if debug:
+        print("Nombre de points supprimés: ", max)
+
+    for p in range(max):
+        Point3D = np.delete(Point3D, p, 0)
+        Point2D = np.delete(Point2D, p, 0)
+
+
     equations = np.zeros([18,12])
     C = np.array([[0, 0 ,0 ,0 ,0, 0, 0, 0, 0, 0, 0, 0]])
 
@@ -66,7 +88,15 @@ def pnp(Point3D,Point2D,IntrinsicMat):
 
 
 if __name__ == '__main__':
-    rotM, transV = pnp(Points_3D,Points_2D,Intrinsec)
-    print(rotM)
-    print(transV)
+    debug = False
+
+    if debug:
+        print("--------------------")
+        print("|  DEBUG MODE: ON  |")
+        print("--------------------")
+
+    rotM, transV = pnp(Points_3D,Points_2D,Intrinsec,debug)
+    if debug:
+        print("Matrice de rotation:\n",rotM)
+        print("Vecteur de translation:\n",transV)
 
