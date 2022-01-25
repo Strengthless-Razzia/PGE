@@ -85,14 +85,17 @@ class PNPResultVisualizationThread(QThread):
                 
                 picked_points_Ro.append([X, Y, Z])
 
-                self.axes3D.scatter(X, Y, Z, color='red', marker='x')
-                self.axes3D.text(X, Y, Z, str(len(picked_points_Ro)), color='red')
-                
+                # Garde des references a ces elements graphiques pour pouvoir les supprimer
+                scatter_element = self.axes3D.scatter(X, Y, Z, color='red', marker='x')
+                text_element = self.axes3D.text(X, Y, Z, str(len(picked_points_Ro)), color='red')
+                self.plot_elements.append(scatter_element)
+                self.plot_elements.append(text_element)
 
                 print("[*] 3D Point {:d}: ({:.2f}, {:.2f}, {:.2f})".format(
                     len(picked_points_Ro), X, Y, Z))
 
         self.picked_lines_RO = []
+        self.plot_elements = []
         self.axes3D, lines = plot_3d_model(self.model3D_Ro, self.fig, sub=211)
         self.axes3D.set_zlim(-20,20)
         #A Modifier 
@@ -121,6 +124,7 @@ class PNPResultVisualizationThread(QThread):
         object_points = np.array(self.picked_lines_RO)
         image_points = self.image_points[:object_points.shape[0],:]
 
+
         success, rotation_vector, translation_vector = cv2.solvePnP(
             object_points,
             image_points,
@@ -134,11 +138,17 @@ class PNPResultVisualizationThread(QThread):
     
     def update_draw_model_pnp_result(self, state):
         self.draw_model_pnp_result = state == 2
+    
+    def clear_picked_lines_RO(self):
+        self.picked_lines_RO.clear()
+        for plot_element in self.plot_elements:
+            plot_element.remove()
+        self.plot_elements.clear()
 
     def draw_model(self):
         #print("Draw model")
         self.axes2D.cla()
-        self.axes2D.imshow(mpimg.imread("./Data/Plaque1/Cognex/image1.bmp"))
+        self.axes2D.imshow(mpimg.imread("./Data/Plaque1/Cognex/image6.bmp"))
         if self.draw_model_pnp_result:
             transform_and_draw_model(self.model3D_Ro, self.intrinsic_mat, self.extrinsic_mat, self.axes2D)  # 3D model drawing
 

@@ -63,6 +63,10 @@ class App(QWidget):
 
         mainbox.addWidget(draw_pnp_result_checkbox)
 
+        clear_object_points_button  = QPushButton("Clear 3D points", self)
+
+        mainbox.addWidget(clear_object_points_button)
+
         self.pnp_widget = PNPResultVisualizationWidget()
 
         mainbox.addWidget(self.pnp_widget)
@@ -79,6 +83,7 @@ class App(QWidget):
         
         solvePNPButton.clicked.connect(self.threadPNP.process_pnp)
         draw_pnp_result_checkbox.stateChanged.connect(self.threadPNP.update_draw_model_pnp_result)
+        clear_object_points_button.clicked.connect(self.threadPNP.clear_picked_lines_RO)
         # connect sliders
 
         self.p1_slider.valueChangedSignal.connect(self.threadHough.update_p1)
