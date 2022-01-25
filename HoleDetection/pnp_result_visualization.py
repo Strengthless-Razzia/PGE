@@ -8,17 +8,15 @@ import matplotlib.image as mpimg
 from mpl_toolkits.mplot3d import Axes3D
 from matUtils import *
 import cv2
-from extractHoles import getAllCircles
 
 class PNPResultVisualizationWidget(QWidget):
     def __init__(self):
         super().__init__()
 
-        self.setFixedHeight(800)
+        self.setFixedHeight(1000)
         self.fig = Figure()
         self.canvas = FigureCanvas(self.fig)
-        self.axes = self.fig.add_subplot(111)
-
+        
         layout = QVBoxLayout(self)
 
         layout.addWidget(self.canvas)
@@ -32,10 +30,10 @@ class PNPResultVisualizationThread(QThread):
 
     update_plot_signal = pyqtSignal()
 
-    def __init__(self, fig_axis) -> None:
+    def __init__(self, fig) -> None:
         super().__init__()
         self._run_flag = True
-        self.fig_axis = fig_axis
+        self.fig = fig
         
         self.image_points = np.array([[0.,0.], [1., 1.], [2., 2.], [3., 3.]])
 
@@ -51,10 +49,12 @@ class PNPResultVisualizationThread(QThread):
         
         self.extrinsic_mat = np.ones((4,4))
 
-        self.step_file_path = "Data/Plaque1/Model/Plaque_1.stp"
-        with open(self.step_file_path) as f:
-            file = f.readlines()
-        self.holes_point_3D, diameters = getAllCircles(file, getBothFaces=False)
+        with open('HoleDetection/Points3D/Plaque1.npy', 'rb') as f:
+            array = np.load(f, allow_pickle=False)
+        
+        # Si tu t'attends a un commentaire pour comprendre cette ligne c'est mort
+        self.holes_point_3D = array[array[:, 3].argsort()][::-1][:, :3]
+        
 
         model_points_3DRo = np.loadtxt("Data/Plaque1/Model/Plaque_1.xyz", dtype=float)
         model_edges = np.loadtxt("Data/Plaque1/Model/Plaque_1.edges", dtype=int)
@@ -62,7 +62,12 @@ class PNPResultVisualizationThread(QThread):
         XYZ1_Ro = model_points_3DRo[model_edges[:, 0]]
         XYZ2_Ro = model_points_3DRo[model_edges[:, 1]]
         self.model3D_Ro = np.concatenate([XYZ1_Ro, XYZ2_Ro], axis=1)
+
         
+        self.axes3D = plot_3d_model(self.model3D_Ro, self.fig, sub=211)[0]
+        self.axes3D.set_zlim(-20,20)
+        self.scat = self.axes3D.scatter(self.holes_point_3D[:,0], self.holes_point_3D[:,1], self.holes_point_3D[:,2], color='green', alpha=0.4)
+        self.axes2D = self.fig.add_subplot(212)
 
     def run(self):
     
@@ -78,7 +83,7 @@ class PNPResultVisualizationThread(QThread):
         self.wait()
     
     def update_image_points(self, points):
-        self.image_points = points[:,:2]
+        self.image_points = points[:,:2].astype(np.float32)
         #print("Updated points :", points)
 
     def process_pnp(self):
@@ -86,13 +91,10 @@ class PNPResultVisualizationThread(QThread):
         # A changer
         holes_point_3D = self.holes_point_3D[:self.image_points.shape[0],:]
 
-        #print(holes_point_3D.shape, self.image_points.shape)
-
-
         success, rotation_vector, translation_vector, inliners = cv2.solvePnPRansac(
-            holes_point_3D, 
-            self.image_points, 
-            self.intrinsic_mat, 
+            holes_point_3D,
+            self.image_points,
+            self.intrinsic_mat,
             self.distortion_coefs,
             flags=0)
         
@@ -103,10 +105,18 @@ class PNPResultVisualizationThread(QThread):
 
     def draw_model(self):
         #print("Draw model")
-        self.fig_axis.cla()
-        self.fig_axis.imshow(mpimg.imread("./Data/Plaque1/Cognex/image1.bmp"))
-        #transform_and_draw_model(self.model3D_Ro, self.intrinsic_mat, self.extrinsic_mat, self.fig_axis)  # 3D model drawing
+        self.axes2D.cla()
+        self.axes2D.imshow(mpimg.imread("./Data/Plaque1/Cognex/image1.bmp"))
+        transform_and_draw_model(self.model3D_Ro, self.intrinsic_mat, self.extrinsic_mat, self.axes2D)  # 3D model drawing
 
-        self.fig_axis.scatter(self.image_points[:, 0], self.image_points[:, 1], marker='x', color='r')
+        self.axes2D.scatter(self.image_points[:, 0], self.image_points[:, 1], marker='x', color='r')
+        self.scat.remove()
+        self.scat = self.axes3D.scatter(
+            self.holes_point_3D[:self.image_points.shape[0],0], 
+            self.holes_point_3D[:self.image_points.shape[0],1], 
+            self.holes_point_3D[:self.image_points.shape[0],2], 
+            color='red', alpha=0.7, marker='x')
+
+        
 
 

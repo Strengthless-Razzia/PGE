@@ -3,7 +3,7 @@ from PyQt5.QtWidgets import QWidget, QApplication, QLabel, QVBoxLayout, QHBoxLay
 from PyQt5.QtGui import QPixmap
 import sys
 import cv2
-from PyQt5.QtCore import pyqtSignal, pyqtSlot, Qt, QThread
+from PyQt5.QtCore import pyqtSlot, Qt
 import numpy as np
 from slider_widget import CustomSlider
 
@@ -25,7 +25,7 @@ class App(QWidget):
         
         # create sliders
         self.p1_slider = CustomSlider(30, 1.0, 100, "p1")
-        self.p2_slider = CustomSlider(7, 1.0, 100, "p2")
+        self.p2_slider = CustomSlider(30, 1.0, 100, "p2")
 
         self.minR_slider = CustomSlider(10, 0, 100, "minR")
         self.maxR_slider = CustomSlider(60, 0, 100, "maxR")
@@ -57,7 +57,7 @@ class App(QWidget):
 
         # create the video capture thread
         self.threadHough = HoughVisualizationThread()
-        self.threadPNP = PNPResultVisualizationThread(self.pnp_widget.axes)
+        self.threadPNP = PNPResultVisualizationThread(self.pnp_widget.fig)
         # connect its signal to the update_image slot
         self.threadHough.change_pixmap_signal.connect(self.update_image)
         self.threadHough.change_points_signal.connect(self.threadPNP.update_image_points)
