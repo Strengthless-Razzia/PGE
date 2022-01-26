@@ -1,8 +1,7 @@
 import matplotlib.image as mpimg
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
-from extractHoles import getAllCircles
-
+from matUtils import plot_3d_model
 import numpy as np
 
 
@@ -83,8 +82,8 @@ def select_points(nb_points, img_path, points_file_path, edges_file_path, step_f
     with open(step_file_path) as f:
         file = f.readlines()
 
-    holes_point_3D, diameters = getAllCircles(file, getBothFaces=False)
-
+    with open('HoleDetection/Points3D/Plaque1.npy', 'rb') as f:
+            holes_point_3D = np.load(f, allow_pickle=False)[:,:3]
 
     XYZ1_Ro = model_points_3DRo[model_edges[:, 0]]
     XYZ2_Ro = model_points_3DRo[model_edges[:, 1]]
@@ -117,24 +116,6 @@ def select_points(nb_points, img_path, points_file_path, edges_file_path, step_f
     clicked_points = np.array(clicked_points)
 
     return picked_points_Ro, clicked_points
-
-
-def plot_3d_model(model, fig):
-    ax = Axes3D(fig)
-
-    lines = []
-    for idx in range(model.shape[0]):
-        lines.append(ax.plot([model[idx, 0], model[idx, 3]],
-                                [model[idx, 1], model[idx, 4]],
-                                [model[idx, 2], model[idx, 5]],
-                                color='k', picker=5)[0])
-    ax.scatter(0, 0, 0, color='r', s=30)
-    ax.set_xlabel('x (mm)')
-    ax.set_ylabel('y (mm)')
-    ax.set_zlabel('z (mm)')
-    ax.set_title('3D model')
-
-    return ax, lines
 
 
 if __name__ == '__main__':

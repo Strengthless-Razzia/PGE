@@ -1,9 +1,9 @@
 from PyQt5 import QtGui
-from PyQt5.QtWidgets import QWidget, QApplication, QLabel, QVBoxLayout, QHBoxLayout
-from PyQt5.QtGui import QPixmap
+from PyQt5.QtWidgets import QWidget, QApplication, QLabel, QVBoxLayout, QPushButton, QCheckBox
+from PyQt5.QtGui import QPixmap, QFont
 import sys
 import cv2
-from PyQt5.QtCore import pyqtSignal, pyqtSlot, Qt, QThread
+from PyQt5.QtCore import pyqtSlot, Qt
 import numpy as np
 from slider_widget import CustomSlider
 
@@ -25,7 +25,7 @@ class App(QWidget):
         
         # create sliders
         self.p1_slider = CustomSlider(30, 1.0, 100, "p1")
-        self.p2_slider = CustomSlider(7, 1.0, 100, "p2")
+        self.p2_slider = CustomSlider(30, 1.0, 100, "p2")
 
         self.minR_slider = CustomSlider(10, 0, 100, "minR")
         self.maxR_slider = CustomSlider(60, 0, 100, "maxR")
@@ -49,6 +49,24 @@ class App(QWidget):
         # set the vbox layout as the widgets layout
         mainbox.addLayout(vbox)
 
+        solvePNPButton = QPushButton("SOLVE PNP BATARD", self)
+        solvePNPButton.setFixedHeight(100)
+        solvePNPButton.setStyleSheet("background-color: red; color: white")
+        font_button = QFont('Times', 20)
+        font_button.setBold(True)
+        solvePNPButton.setFont(font_button)
+        
+        mainbox.addWidget(solvePNPButton)
+
+        draw_pnp_result_checkbox = QCheckBox(self)
+        draw_pnp_result_checkbox.setText("Draw Model on Image")
+
+        mainbox.addWidget(draw_pnp_result_checkbox)
+
+        clear_object_points_button  = QPushButton("Clear 3D points", self)
+
+        mainbox.addWidget(clear_object_points_button)
+
         self.pnp_widget = PNPResultVisualizationWidget()
 
         mainbox.addWidget(self.pnp_widget)
@@ -57,12 +75,15 @@ class App(QWidget):
 
         # create the video capture thread
         self.threadHough = HoughVisualizationThread()
-        self.threadPNP = PNPResultVisualizationThread(self.pnp_widget.axes)
+        self.threadPNP = PNPResultVisualizationThread(self.pnp_widget.fig)
         # connect its signal to the update_image slot
         self.threadHough.change_pixmap_signal.connect(self.update_image)
         self.threadHough.change_points_signal.connect(self.threadPNP.update_image_points)
         self.threadPNP.update_plot_signal.connect(self.pnp_widget.update_canvas)
         
+        solvePNPButton.clicked.connect(self.threadPNP.process_pnp)
+        draw_pnp_result_checkbox.stateChanged.connect(self.threadPNP.update_draw_model_pnp_result)
+        clear_object_points_button.clicked.connect(self.threadPNP.clear_picked_lines_RO)
         # connect sliders
 
         self.p1_slider.valueChangedSignal.connect(self.threadHough.update_p1)
