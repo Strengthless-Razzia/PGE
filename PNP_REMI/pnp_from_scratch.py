@@ -89,7 +89,7 @@ def pnp(Point3D,Point2D,IntrinsicMat,debug=False):
 
 if __name__ == '__main__':
     debug = False
-
+    fdcxghchgfx
     if debug:
         print("--------------------")
         print("|  DEBUG MODE: ON  |")
