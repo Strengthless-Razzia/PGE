@@ -37,7 +37,7 @@ def rotate2dPoints(points, alpha):
     newPoints[:,1] = Y_new
     return newPoints
 
-def generateNewGrid():
+def generateNewGrid(deletion = False, amountToDelete = 5):
     X = []
     Y = []
     startX = random() * 1000
@@ -52,6 +52,9 @@ def generateNewGrid():
     newPoints[:,0] = X
     newPoints[:,1] = Y
     np.random.shuffle(newPoints)
+    if deletion:
+        for i in range(amountToDelete):
+            newPoints = np.delete(newPoints,0,axis=0)
     return newPoints
 
 def sortPoints(points, sortAxis = 0):
@@ -66,25 +69,62 @@ def sortPoints(points, sortAxis = 0):
         sortedPoints=np.vstack((sortedPoints,points[foundIndex,:]))
         points = np.delete(points,foundIndex,axis=0)
     return sortedPoints
-        
 
 def getAlignement(points):
     sortedOnX = sortPoints(points,0)
     sortedOnY = sortPoints(points,1)
     pointsAlignment = abs(sortedOnY[0][1] - sortedOnY[7][1])
-    direction = abs(sortedOnY[0][0]-sortedOnX[0][0])<=abs(sortedOnY[0][0]-sortedOnX[-1][0]) #Renvoie False si il faut tourner en negatif, True sinon 
+    direction = abs(sortedOnY[0][0]-sortedOnX[0][0])>=abs(sortedOnY[0][0]-sortedOnX[-1][0]) #Renvoie True si il faut tourner en negatif, False sinon 
     return pointsAlignment, direction
     
+def findNextGoodPosition(points, amount, dir):
+    rotationAngle = amount * (-1*dir) + amount * (1-dir)
+    newPoints = rotate2dPoints(points, rotationAngle)
+    return newPoints
+
+def getPointsStraight(points, objective,threshold,display=False):
+    flatness = 100000
+    history = [10000,5000,3000]
+    while flatness > threshold:
+        [flatness, dir] = getAlignement(points)
+        history.append(flatness)
+        history.pop(0)
+        amountChanged = abs(min(history) - max(history))
+        if amountChanged < 0.5:
+            if display:
+                plt.clf()
+                plt.scatter(points[:,0], points[:,1], c='b', marker='x', label='1')
+                plt.scatter(objective[:,0], objective[:,1], c='r', marker='s', label='-1')
+                plt.show(block=False)
+                print flatness, dir
+                plt.waitforbuttonpress()
+                temp = rotate2dPoints(points, 90)
+                [tflatness, _] = getAlignement(temp)
+                if tflatness > flatness:
+                    return points
+                else:
+                    points = temp
+
+        points = findNextGoodPosition(points,flatness,dir)
+        if display:
+            plt.clf()
+            plt.scatter(points[:,0], points[:,1], c='b', marker='x', label='1')
+            plt.scatter(objective[:,0], objective[:,1], c='r', marker='s', label='-1')
+            plt.show(block=False)
+            print flatness, dir
+            plt.waitforbuttonpress()
+
+        
+    return points
 
 with open('HoleDetection\Points3D\Plaque1.npy', 'rb') as f:
     picked_points_Ro = np.load(f, allow_pickle=False)
 
-grid = generateNewGrid()    
-newGrid =rotate2dPoints(grid,(random()*90-45))
 
-[flatness, dir] = getAlignement(newGrid)
-print flatness, dir
-# plotting data
-plt.scatter(newGrid[:,0], newGrid[:,1], c='b', marker='x', label='1')
-plt.scatter(grid[:,0], grid[:,1], c='r', marker='s', label='-1')
-plt.show()
+while True:
+    print "Nouvelle grille"
+    grid = generateNewGrid()    
+    newGrid =rotate2dPoints(grid,(random()*360-180))
+    straightGrid=getPointsStraight(newGrid,grid, 0.05,display=True)
+
+    
