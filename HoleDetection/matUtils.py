@@ -75,7 +75,7 @@ def perspective_projection(intrinsic, P_c):
     # Input:                                                #
     #   intrinsic : ndarray[3x3] - parametres intrinseques  #
     #   P_c : ndarray[Nx3],                                 #
-    #         N = nombre de points à transformer            #
+    #         N = nombre de points a transformer            #
     #         3 = (X, Y, Z) les coordonnees des points      #
     # Output:                                               #
     #   u, v : deux ndarray[N] contenant les                #

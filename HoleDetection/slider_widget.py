@@ -7,7 +7,7 @@ class CustomSlider(QWidget):
     valueChangedSignal = pyqtSignal(float)
 
     def __init__(self, init_value = 0.0 , min = 0, max = 1, name = ""):
-        super().__init__()
+        super(CustomSlider,self).__init__()
         self.min = min
         self.max = max
         self.name = name

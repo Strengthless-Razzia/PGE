@@ -13,7 +13,7 @@ from pnp_result_visualization import PNPResultVisualizationWidget, PNPResultVisu
 
 class App(QWidget):
     def __init__(self):
-        super().__init__()
+        super(App,self).__init__()
         self.setWindowTitle("Qt hough parametres")
         self.disply_width = 1000
         self.display_height = 1000

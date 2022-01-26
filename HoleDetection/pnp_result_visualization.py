@@ -15,7 +15,7 @@ class PNPResultVisualizationWidget(QWidget):
     Widget qui sert a l'integration de matplotlib dans Qt 
     """
     def __init__(self):
-        super().__init__()
+        super(PNPResultVisualizationWidget,self).__init__()
 
         # On lui donne une hauteur fixe mais la largeur change dynamiquement
         self.setFixedHeight(1000)
@@ -51,14 +51,14 @@ class PNPResultVisualizationThread(QThread):
     update_plot_signal = pyqtSignal()
 
     
-    def __init__(self, fig) -> None:
+    def __init__(self, fig):
         """
             Fonction __init__
             le Thread a besoin d'une reference a la figure du widget pour
             pouvoir le modifier directement dans les diffrentes fonction
             (pas ideal)
         """
-        super().__init__()
+        super(PNPResultVisualizationThread,self).__init__()
 
         # Variable indiquant si le thread continue ou non
         self._run_flag = True

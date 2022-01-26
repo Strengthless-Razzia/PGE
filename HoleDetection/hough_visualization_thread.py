@@ -7,7 +7,7 @@ class HoughVisualizationThread(QThread):
     change_points_signal = pyqtSignal(np.ndarray)
 
     def __init__(self):
-        super().__init__()
+        super(HoughVisualizationThread,self).__init__()
         self._run_flag = True
         self.original_image = cv2.imread("./Data/Plaque1/Cognex/image3.bmp")
 
