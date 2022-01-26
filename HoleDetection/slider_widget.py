@@ -1,7 +1,6 @@
 from PyQt5.QtWidgets import QWidget, QSlider, QHBoxLayout, QLabel
 from PyQt5.QtCore import Qt, pyqtSignal
 
-
 class CustomSlider(QWidget):
 
     valueChangedSignal = pyqtSignal(float)
