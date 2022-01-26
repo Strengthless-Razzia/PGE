@@ -23,7 +23,6 @@ class App(QWidget):
         # create a text label
         self.textLabelParam = QLabel('Parametres')
         self.textLabelTitle= QLabel('Hough Hole Detection')
-        
         # create sliders
         self.p1_slider = CustomSlider(30., 1.0, 100., "p1")
         self.p2_slider = CustomSlider(30., 1.0, 100., "p2")

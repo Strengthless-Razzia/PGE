@@ -129,6 +129,7 @@ class PNPResultVisualizationThread(QThread):
                 
                 picked_points_Ro.append([X, Y, Z])
                 self.nb_picked_points_signal.emit(len(picked_points_Ro))
+                
 
                 # Garde des references a ces elements graphiques pour pouvoir les supprimer
                 scatter_element = self.axes3D.scatter(X, Y, Z, color='red', marker='x')
@@ -136,8 +137,10 @@ class PNPResultVisualizationThread(QThread):
                 self.plot_elements.append(scatter_element)
                 self.plot_elements.append(text_element)
 
-                print("[*] 3D Point {:d}: ({:.2f}, {:.2f}, {:.2f})".format(
-                    len(picked_points_Ro), X, Y, Z))
+                print("[*] 3D Point {:d}: ({:.2f}, {:.2f}, {:.2f}) corresponding to ({:.2f}, {:.2f})".format(
+                    len(picked_points_Ro), X, Y, Z, 
+                    self.image_points[len(picked_points_Ro) -1, 0], 
+                    self.image_points[len(picked_points_Ro) -1, 1]))
 
         self.picked_lines_RO = []
         
@@ -212,7 +215,7 @@ class PNPResultVisualizationThread(QThread):
     def draw_model(self):
         #print("Draw model")
         self.axes2D.cla()
-        self.axes2D.imshow(mpimg.imread("./Data/Plaque1/Cognex/image3.bmp"))
+        self.axes2D.imshow(mpimg.imread("./Data/Plaque1/Cognex/image6.bmp"))
         if self.draw_model_pnp_result:
             transform_and_draw_model(self.model3D_Ro, self.intrinsic_mat, self.extrinsic_mat, self.axes2D)  # 3D model drawing
 
