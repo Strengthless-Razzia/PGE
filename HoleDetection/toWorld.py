@@ -1,8 +1,5 @@
 import numpy as np
-import cv2
 from matUtils import *
-import matplotlib.pyplot as plt
-import matplotlib.image as mpimg
 
 
 def imageToWorld(intrinsic_mat, extrinsic_mat_tab, twod_point_tab) :  
@@ -14,7 +11,8 @@ def imageToWorld(intrinsic_mat, extrinsic_mat_tab, twod_point_tab) :
         #keeping the homogenous parameters for inversing, and getting rid of it after 
         extrinsic_mat_inv =np.linalg.inv(extrinsic_mat_tab[n])
         
-        real_world = np.dot(np.dot(twod_point_tab[n], np.linalg.inv(A)),  extrinsic_mat_inv[:3, :4])
+        #trouver S sa mere la
+        real_world = np.dot(s * np.dot(twod_point_tab[n], np.linalg.inv(A)),  extrinsic_mat_inv[:3, :4])
         res_glob.append(real_world) 
         print(real_world)
         #jsais pas quoi foutre de ces résultats mon frérot, jpeux avoir X Y Z 1 en divisant tout par le dernier terme i guess, 
