@@ -27,7 +27,8 @@ if __name__ == '__main__':
         clicked_points, 
         cognex_calibration_camera_matrix, 
         cognex_distortion_coef)
-
+    
+    print("Inliers : ", inliers)
     print("Sucess :", success)
     extrinsic_mat = construct_matrix_from_vec(np.concatenate([rotation_vector, translation_vector]))
     print("Extrinsic matrix :\n", extrinsic_mat)
@@ -41,7 +42,7 @@ if __name__ == '__main__':
 
     fig1 = plt.figure(1)
     ax1 = fig1.add_subplot(111)
-    plt.imshow(mpimg.imread("Data\Plaque1\Cognex\image1.bmp"))
+    plt.imshow(mpimg.imread("Data\Plaque1\Cgnex\image1.bmp"))
     transform_and_draw_model(model3D_Ro, cognex_calibration_camera_matrix, extrinsic_mat, ax1)  # 3D model drawing
 
     plt.scatter(clicked_points[:, 0], clicked_points[:, 1], marker='x', color='g')
