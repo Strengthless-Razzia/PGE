@@ -18,7 +18,8 @@ class PNPResultVisualizationWidget(QWidget):
         super(PNPResultVisualizationWidget,self).__init__()
 
         # On lui donne une hauteur fixe mais la largeur change dynamiquement
-        self.setFixedHeight(1000)
+        self.setFixedWidth(800)
+        self.setFixedHeight(800)
 
         # Figure Matplotlib sur laquelle on fera les plots
         self.fig = Figure()
@@ -49,7 +50,7 @@ class PNPResultVisualizationThread(QThread):
     # Signal emit lorsque qu'il faut redraw le canvas 
     # Il est connecte a la fonction update_canvas du widget
     update_plot_signal = pyqtSignal()
-
+    nb_picked_points_signal = pyqtSignal(int)
     
     def __init__(self, fig):
         """
@@ -127,6 +128,7 @@ class PNPResultVisualizationThread(QThread):
 
                 
                 picked_points_Ro.append([X, Y, Z])
+                self.nb_picked_points_signal.emit(len(picked_points_Ro))
 
                 # Garde des references a ces elements graphiques pour pouvoir les supprimer
                 scatter_element = self.axes3D.scatter(X, Y, Z, color='red', marker='x')
@@ -138,6 +140,7 @@ class PNPResultVisualizationThread(QThread):
                     len(picked_points_Ro), X, Y, Z))
 
         self.picked_lines_RO = []
+        
         self.plot_elements = []
         self.axes3D, lines = plot_3d_model(self.model3D_Ro, self.fig, sub=211)
         self.axes3D.set_zlim(-20,20)
@@ -146,7 +149,7 @@ class PNPResultVisualizationThread(QThread):
         self.axes2D = self.fig.add_subplot(212)
 
     def run(self):
-    
+        self.nb_picked_points_signal.emit(0)
         while self._run_flag:
             #self.process_pnp()
             self.draw_model()
@@ -164,8 +167,13 @@ class PNPResultVisualizationThread(QThread):
 
     def process_pnp(self):
         
+        if len(self.picked_lines_RO) < 4:
+            print("You have to pick at least 4 points")
+            return False
+
         object_points = np.array(self.picked_lines_RO)
         image_points = self.image_points[:object_points.shape[0],:]
+
 
 
         rotation_matrix, t_vec = pnp(object_points, image_points, self.intrinsic_mat)
@@ -189,15 +197,17 @@ class PNPResultVisualizationThread(QThread):
         print("Extrinseque Opencv \n", self.extrinsic_mat)
 
         #self.extrinsic_mat = self.extrinsic_mat_remi
+        return success
 
     def update_draw_model_pnp_result(self, state):
         self.draw_model_pnp_result = state == 2
     
     def clear_picked_lines_RO(self):
-        self.picked_lines_RO.clear()
+        self.picked_lines_RO = []
+        self.nb_picked_points_signal.emit(0)
         for plot_element in self.plot_elements:
             plot_element.remove()
-        self.plot_elements.clear()
+        self.plot_elements = []
 
     def draw_model(self):
         #print("Draw model")

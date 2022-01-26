@@ -54,7 +54,9 @@ def pnp(Point3D,Point2D,IntrinsicMat,debug=False):
     equations = np.zeros([18,12])
     C = np.array([[0, 0 ,0 ,0 ,0, 0, 0, 0, 0, 0, 0, 0]])
 
-    for p2, p3 in itertools.zip_longest(Point2D, Point3D):
+    for i in range(min(len(Point2D), len(Point3D))):
+        p2 = Point2D[i]
+        p3 = Point3D[i]
         x = p2[0]
         y = p2[1]
 

@@ -64,7 +64,7 @@ def transform_and_draw_model(edges_Ro, intrinsic, extrinsic, fig_axis):
     [u_2, v_2] = perspective_projection(intrinsic, P2_cam)
 
     for p in range(edges_Ro.shape[0]):
-        fig_axis.plot([u_1[p], u_2[p]], [v_1[p], v_2[p]], color='pink')
+        fig_axis.plot([u_1[p], u_2[p]], [v_1[p], v_2[p]], color='m')
 
 
 def perspective_projection(intrinsic, P_c):
