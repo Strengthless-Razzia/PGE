@@ -5,6 +5,7 @@ import numpy as np
 class HoughVisualizationThread(QThread):
     change_pixmap_signal = pyqtSignal(np.ndarray)
     change_points_signal = pyqtSignal(np.ndarray)
+    
 
     def __init__(self):
         super(HoughVisualizationThread,self).__init__()

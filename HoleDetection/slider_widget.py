@@ -5,7 +5,7 @@ class CustomSlider(QWidget):
 
     valueChangedSignal = pyqtSignal(float)
 
-    def __init__(self, init_value = 0.0 , min = 0, max = 1, name = ""):
+    def __init__(self, init_value = 0. , min = 0., max = 1., name = ""):
         super(CustomSlider,self).__init__()
         self.min = min
         self.max = max
@@ -18,8 +18,8 @@ class CustomSlider(QWidget):
     def initUI(self):
 
         hbox = QHBoxLayout()
-
-        self.sld.setRange(0, 100)
+        self.sld.setMinimum(0)
+        self.sld.setMaximum(100)
         self.sld.setFocusPolicy(Qt.NoFocus)
         self.sld.setPageStep(5)
 
@@ -28,7 +28,7 @@ class CustomSlider(QWidget):
 
         self.label = QLabel('', self)
         self.updateLabel(self.init_value)
-        self.sld.setValue(int((self.init_value) / (self.max - self.min) *100))
+        self.sld.setValue((self.init_value) / (self.max - self.min) * 100.)
 
         self.label.setAlignment(Qt.AlignCenter | Qt.AlignVCenter)
         self.label.setMinimumWidth(80)
@@ -48,5 +48,5 @@ class CustomSlider(QWidget):
         self.label.setText("{:.2f}".format(value))
     
     def valueChanged(self, value):
-        self.valueChangedSignal.emit((self.max - self.min)*(value/100) + abs(self.min))
+        self.valueChangedSignal.emit((self.max - self.min)*(value/100.) + abs(self.min))
         
