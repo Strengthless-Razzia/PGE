@@ -215,7 +215,7 @@ class PNPResultVisualizationThread(QThread):
     def draw_model(self):
         #print("Draw model")
         self.axes2D.cla()
-        self.axes2D.imshow(mpimg.imread("./Data/Plaque1/Cognex/image6.bmp"))
+        self.axes2D.imshow(mpimg.imread("./Data/Plaque1/Cognex/image1.bmp"))
         if self.draw_model_pnp_result:
             transform_and_draw_model(self.model3D_Ro, self.intrinsic_mat, self.extrinsic_mat, self.axes2D)  # 3D model drawing
 
