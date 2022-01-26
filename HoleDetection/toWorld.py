@@ -17,6 +17,8 @@ def imageToWorld(intrinsic_mat, extrinsic_mat_tab, twod_point_tab) :
         real_world = np.dot(np.dot(twod_point_tab[n], np.linalg.inv(A)),  extrinsic_mat_inv[:3, :4])
         res_glob.append(real_world) 
         print(real_world)
+        #jsais pas quoi foutre de ces résultats mon frérot, jpeux avoir X Y Z 1 en divisant tout par le dernier terme i guess, 
+        #mais là j'ai des valeurs si faibles, et la 4eme valeur si forte que j'aurais des X Y Z ridicules wtf
     
     return(res_glob)
 
