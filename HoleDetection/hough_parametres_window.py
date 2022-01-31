@@ -49,7 +49,7 @@ class App(QWidget):
         
         
         textLabelTitlePnP = QLabel('PnP solving')
-        self.solvePNPButton = QPushButton("SOLVE PNP BATARD", self)
+        self.solvePNPButton = QPushButton("SOLVE PNP", self)
         self.solvePNPButton.setFixedHeight(80)
         self.solvePNPButton.setStyleSheet("background-color: red; color: white")
         font_button = QFont('Times', 20)
@@ -119,7 +119,7 @@ class App(QWidget):
         return QPixmap.fromImage(p)
     
     def update_button(self, nb_points):
-        self.solvePNPButton.setText("SOLVE P-{:d}-P JEUNE HOMME".format((nb_points)))
+        self.solvePNPButton.setText("SOLVE P-{:d}-P".format((nb_points)))
         self.solvePNPButton.setEnabled(nb_points > 4)
 
     
