@@ -1,6 +1,6 @@
 # needed libraries
 from random import random
-from cv2 import rotate
+import cv2 as cv
 import numpy as np
 import math 
 import matplotlib.pyplot as plt
@@ -71,61 +71,53 @@ def sortPoints(points, sortAxis = 0):
         points = np.delete(points,foundIndex,axis=0)
     return sortedPoints
 
-def getAlignement(points):
-    sortedOnX = sortPoints(points,0)
-    sortedOnY = sortPoints(points,1)
-    pointsAlignment = abs(sortedOnY[0][1] - sortedOnY[7][1])
-    direction = abs(sortedOnY[0][0]-sortedOnX[0][0])>=abs(sortedOnY[0][0]-sortedOnX[-1][0]) #Renvoie True si il faut tourner en negatif, False sinon 
-    return pointsAlignment, direction
+
+def findMarkPosition(imgPath, debug = True):
+    im = cv.imread(imgPath, cv.IMREAD_GRAYSCALE)
+    _,im = cv.threshold(im,50,256,cv.THRESH_BINARY)
+    params = cv.SimpleBlobDetector_Params() 
+
+    params.minDistBetweenBlobs = 10
+    params.minRepeatability = 1
+    params.minThreshold = 0
+    params.maxThreshold = 10
+    params.filterByArea = True
+    params.minArea = 20
+    params.maxArea = 500000
+
+    params.filterByCircularity = False
+    params.minCircularity = 0.7
+    params.maxCircularity = 0.8
+
+    params.filterByConvexity = False
+    params.minConvexity = 0.87
+
+    params.filterByInertia = False
+    params.minInertiaRatio = 0.01
     
-def findNextGoodPosition(points, amount, dir):
-    rotationAngle = amount * (-1*dir) + amount * (1-dir)
-    newPoints = rotate2dPoints(points, rotationAngle)
-    return newPoints
+    detector = cv.SimpleBlobDetector_create(params)
+    keypoints = detector.detect(im)
+    if debug:
+        # Show keypoints
+        im_with_keypoints = cv.drawKeypoints(im, keypoints, np.array([]), (0,0,255), cv.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS)
+        im_with_keypoints = cv.resize(im_with_keypoints,(1000,1000))
+        cv.imshow("Keypoints", im_with_keypoints)
+        cv.waitKey(0)
+    x = keypoints[0].pt[0]
+    y = keypoints[0].pt[1]
 
-def getPointsStraight(points, objective,threshold,display=False):
-    flatness = 100000
-    history = [10000,5000,3000]
-    while flatness > threshold:
-        [flatness, dir] = getAlignement(points)
-        history.append(flatness)
-        history.pop(0)
-        amountChanged = abs(min(history) - max(history))
-        if amountChanged < 0.5:
-            if display:
-                plt.clf()
-                plt.scatter(points[:,0], points[:,1], c='b', marker='x', label='1')
-                plt.scatter(objective[:,0], objective[:,1], c='r', marker='s', label='-1')
-                plt.show(block=False)
-                print flatness, dir
-                plt.waitforbuttonpress()
-                temp = rotate2dPoints(points, 90)
-                [tflatness, _] = getAlignement(temp)
-                if tflatness > flatness:
-                    return points
-                else:
-                    points = temp
-
-        points = findNextGoodPosition(points,flatness,dir)
-        if display:
-            plt.clf()
-            plt.scatter(points[:,0], points[:,1], c='b', marker='x', label='1')
-            plt.scatter(objective[:,0], objective[:,1], c='r', marker='s', label='-1')
-            plt.show(block=False)
-            print flatness, dir
-            plt.waitforbuttonpress()
-
+    return (x,y)
         
-    return points
 
 with open('HoleDetection\Points3D\Plaque1.npy', 'rb') as f:
     picked_points_Ro = np.load(f, allow_pickle=False)
 
+print(findMarkPosition("HoleDetection\ShittyDataset\image3.bmp"))
 
-while True:
-    print "Nouvelle grille"
-    grid = generateNewGrid(True,5)    
-    newGrid =rotate2dPoints(grid,(random()*360-180))
-    straightGrid=getPointsStraight(newGrid,grid, 0.05,display=True)
+#
+# while True:
+    #print "Nouvelle grille"
+    #grid = generateNewGrid(True,5)    
+    #newGrid =rotate2dPoints(grid,(random()*360-180))
 
-    
+    #straightGrid=getPointsStraight(newGrid,grid, 0.05,display=True)
