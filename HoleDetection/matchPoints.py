@@ -60,13 +60,14 @@ def generateNewGrid(deletion = False, amountToDelete = 5):
 def sortPoints(points, sortAxis = 0):
     sortedPoints = np.zeros([0,2])
     while len(points) > 0:
+        foundIndex = -1
         temp=-1
         for i in range(len(points)):
             if points[i,sortAxis] >= temp:
                 temp = points[i,sortAxis]
                 foundIndex=i
-
-        sortedPoints=np.vstack((sortedPoints,points[foundIndex,:]))
+        if foundIndex != -1:
+            sortedPoints=np.vstack((sortedPoints,points[foundIndex,:]))
         points = np.delete(points,foundIndex,axis=0)
     return sortedPoints
 
@@ -123,7 +124,7 @@ with open('HoleDetection\Points3D\Plaque1.npy', 'rb') as f:
 
 while True:
     print "Nouvelle grille"
-    grid = generateNewGrid()    
+    grid = generateNewGrid(True,5)    
     newGrid =rotate2dPoints(grid,(random()*360-180))
     straightGrid=getPointsStraight(newGrid,grid, 0.05,display=True)
 

@@ -5,14 +5,15 @@ import numpy as np
 class HoughVisualizationThread(QThread):
     change_pixmap_signal = pyqtSignal(np.ndarray)
     change_points_signal = pyqtSignal(np.ndarray)
+    
 
     def __init__(self):
-        super().__init__()
+        super(HoughVisualizationThread,self).__init__()
         self._run_flag = True
-        self.original_image = cv2.imread("./Data/Plaque1/Cognex/image1.bmp")
+        self.original_image = cv2.imread("./Data/Plaque1/Cognex/image3.bmp")
 
         self.p1 = 30
-        self.p2 = 7
+        self.p2 = 30
         self.blur = 5
         self.dp = 1.5
         self.minDist = 295 #270

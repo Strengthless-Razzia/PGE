@@ -1,4 +1,6 @@
+from matplotlib import projections
 import numpy as np
+from mpl_toolkits.mplot3d import Axes3D
 
 def construct_matrix_from_vec(vec_solution):
     a = vec_solution[0]
@@ -62,7 +64,7 @@ def transform_and_draw_model(edges_Ro, intrinsic, extrinsic, fig_axis):
     [u_2, v_2] = perspective_projection(intrinsic, P2_cam)
 
     for p in range(edges_Ro.shape[0]):
-        fig_axis.plot([u_1[p], u_2[p]], [v_1[p], v_2[p]], color='red')
+        fig_axis.plot([u_1[p], u_2[p]], [v_1[p], v_2[p]], color='m')
 
 
 def perspective_projection(intrinsic, P_c):
@@ -73,7 +75,7 @@ def perspective_projection(intrinsic, P_c):
     # Input:                                                #
     #   intrinsic : ndarray[3x3] - parametres intrinseques  #
     #   P_c : ndarray[Nx3],                                 #
-    #         N = nombre de points à transformer            #
+    #         N = nombre de points a transformer            #
     #         3 = (X, Y, Z) les coordonnees des points      #
     # Output:                                               #
     #   u, v : deux ndarray[N] contenant les                #
@@ -95,3 +97,21 @@ def transform_point_with_matrix(transformation_matrix, initial_point):
     transformed_point = np.dot(transformation_matrix, initial_point_cpy.T)
 
     return transformed_point[0:3, :].T
+
+
+def plot_3d_model(model, fig, sub=111):
+    ax = fig.add_subplot(sub, projection='3d')
+
+    lines = []
+    for idx in range(model.shape[0]):
+        lines.append(ax.plot([model[idx, 0], model[idx, 3]],
+                                [model[idx, 1], model[idx, 4]],
+                                [model[idx, 2], model[idx, 5]],
+                                color='k', picker=5)[0])
+    ax.scatter(0, 0, 0, color='r', s=30)
+    ax.set_xlabel('x (mm)')
+    ax.set_ylabel('y (mm)')
+    ax.set_zlabel('z (mm)')
+    ax.set_title('3D model')
+
+    return ax, lines
