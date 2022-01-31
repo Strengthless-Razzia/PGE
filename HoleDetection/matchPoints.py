@@ -74,6 +74,17 @@ def sortPoints(points, sortAxis = 0):
 
 def findMarkPosition(imgPath, debug = True):
     im = cv.imread(imgPath, cv.IMREAD_GRAYSCALE)
+    bordersize = 10
+    im = cv.copyMakeBorder(
+        im,
+        top=bordersize,
+        bottom=bordersize,
+        left=bordersize,
+        right=bordersize,
+        borderType=cv.BORDER_CONSTANT,
+        value=255
+    )
+
     _,im = cv.threshold(im,50,256,cv.THRESH_BINARY)
     params = cv.SimpleBlobDetector_Params() 
 
@@ -85,9 +96,9 @@ def findMarkPosition(imgPath, debug = True):
     params.minArea = 20
     params.maxArea = 500000
 
-    params.filterByCircularity = False
-    params.minCircularity = 0.7
-    params.maxCircularity = 0.8
+    params.filterByCircularity = True
+    params.minCircularity = 0.4
+    params.maxCircularity = 0.9
 
     params.filterByConvexity = False
     params.minConvexity = 0.87
@@ -103,8 +114,8 @@ def findMarkPosition(imgPath, debug = True):
         im_with_keypoints = cv.resize(im_with_keypoints,(1000,1000))
         cv.imshow("Keypoints", im_with_keypoints)
         cv.waitKey(0)
-    x = keypoints[0].pt[0]
-    y = keypoints[0].pt[1]
+    x = keypoints[0].pt[0]-bordersize
+    y = keypoints[0].pt[1]-bordersize
 
     return (x,y)
         
@@ -112,7 +123,7 @@ def findMarkPosition(imgPath, debug = True):
 with open('HoleDetection\Points3D\Plaque1.npy', 'rb') as f:
     picked_points_Ro = np.load(f, allow_pickle=False)
 
-print(findMarkPosition("HoleDetection\ShittyDataset\image3.bmp"))
+print(findMarkPosition("HoleDetection\ShittyDataset\image1.bmp"))
 
 #
 # while True:
