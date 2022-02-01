@@ -143,6 +143,7 @@ class PNPResultVisualizationThread(QThread):
         
         self.plot_elements = []
         self.axes3D, lines = plot_3d_model(self.model3D_Ro, self.fig, sub=211)
+        self.axes3D.scatter(self.holes_point_3D[:,0], self.holes_point_3D[:,1], self.holes_point_3D[:,2])
         self.axes3D.set_zlim(-20,20)
         #A Modifier 
         self.fig.canvas.mpl_connect('pick_event', lambda event: on_pick(event, self.picked_lines_RO))  # Listen to mouse click event within figure 1
@@ -176,11 +177,11 @@ class PNPResultVisualizationThread(QThread):
 
 
 
-        rotation_matrix, t_vec = pnp(object_points, image_points, self.intrinsic_mat)
+        #rotation_matrix, t_vec = pnp(object_points, image_points, self.intrinsic_mat)
 
-        self.extrinsic_mat_remi = np.ones((4, 4))
-        self.extrinsic_mat_remi[:3,:3] = rotation_matrix
-        self.extrinsic_mat_remi[:3,3] = t_vec.T
+        #self.extrinsic_mat_remi[:3,:3] = rotation_matrix
+        #self.extrinsic_mat_remi = np.ones((4, 4))
+        #self.extrinsic_mat_remi[:3,3] = t_vec.T
 
         success, rotation_vector, translation_vector = cv2.solvePnP(
             object_points,
@@ -193,7 +194,7 @@ class PNPResultVisualizationThread(QThread):
 
         self.extrinsic_mat = construct_matrix_from_vec(np.concatenate([rotation_vector, translation_vector]))
 
-        print("Extrinseque Remi \n", self.extrinsic_mat_remi)
+        #print("Extrinseque Remi \n", self.extrinsic_mat_remi)
         print("Extrinseque Opencv \n", self.extrinsic_mat)
 
         #self.extrinsic_mat = self.extrinsic_mat_remi
@@ -212,7 +213,7 @@ class PNPResultVisualizationThread(QThread):
     def draw_model(self):
         #print("Draw model")
         self.axes2D.cla()
-        self.axes2D.imshow(mpimg.imread("./Data/Plaque1/Cognex/image3.bmp"))
+        self.axes2D.imshow(mpimg.imread("./Data/Plaque1/Cognex_LED/image2.bmp"))
         if self.draw_model_pnp_result:
             transform_and_draw_model(self.model3D_Ro, self.intrinsic_mat, self.extrinsic_mat, self.axes2D)  # 3D model drawing
 

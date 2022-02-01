@@ -25,12 +25,12 @@ class App(QWidget):
         self.textLabelTitle= QLabel('Hough Hole Detection')
         
         # create sliders
-        self.p1_slider = CustomSlider(30., 1.0, 100., "p1")
-        self.p2_slider = CustomSlider(30., 1.0, 100., "p2")
+        self.p1_slider = CustomSlider(100., 1.0, 200., "p1")
+        self.p2_slider = CustomSlider(30., 1.0, 200., "p2")
 
-        self.minR_slider = CustomSlider(10., 0., 100., "minR")
-        self.maxR_slider = CustomSlider(60., 0., 100., "maxR")
-        self.minDist_slider = CustomSlider(295., 0., 500., "minDist")
+        self.minR_slider = CustomSlider(0., 0., 100., "minR")
+        self.maxR_slider = CustomSlider(100., 0., 100., "maxR")
+        self.minDist_slider = CustomSlider(150., 0., 500., "minDist")
         self.brightness_value_slider = CustomSlider(10., 0., 100., "brightness")    
         
 
