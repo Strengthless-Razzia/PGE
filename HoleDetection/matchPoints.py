@@ -71,7 +71,6 @@ def sortPoints(points, sortAxis = 0):
         points = np.delete(points,foundIndex,axis=0)
     return sortedPoints
 
-
 def findMarkPosition(imgPath, debug = True):
     im = cv.imread(imgPath, cv.IMREAD_GRAYSCALE)
     bordersize = 10
@@ -114,17 +113,88 @@ def findMarkPosition(imgPath, debug = True):
         im_with_keypoints = cv.resize(im_with_keypoints,(1000,1000))
         cv.imshow("Keypoints", im_with_keypoints)
         cv.waitKey(0)
+
     x = keypoints[0].pt[0]-bordersize
     y = keypoints[0].pt[1]-bordersize
 
     return (x,y)
-        
+
+def getHoughLines(img):
+    """
+    in :
+        img : Path vers une image
+    out:
+        lines : array de N lignes {x1,y1,x2,y2}
+        Return None si erreur de lecture de l'image
+    Fonction generant les lignes Probabilistes de Hough
+    """
+    
+    # Loads an image
+    src = cv.imread(img, cv.IMREAD_GRAYSCALE)
+    # Check if image is loaded fine
+    if src is None:
+        print ('Error opening image!')
+        return None
+    
+    ## TODO Potentiel : Ajouter un pretraitement de l'image pour avoir une meilleure detection des edges
+
+    imgEdges = cv.Canny(src, 50, 200, None, 3)
+    lines = cv.HoughLinesP(imgEdges, 1, np.pi / 180, 50, None, 50, 10)
+    #Enlever une dimension inutile de HoughLinesP pour faciliter l'utilisation de lines
+    (x,y,z) = lines.shape
+    lines = np.resize(lines, (x,z))
+    i = 0
+    while i < len(lines):
+        if abs(lines[i,0]-lines[i,2])+abs(lines[i,1]-lines[i,3]) < 100:
+            lines = np.delete(lines,i,axis=0)
+        else:
+            i+=1
+    return lines
+
+def getCenter(line):
+    return ((int(line[0])+int(line[2]))/2, (int(line[1])+int(line[3]))/2)
+
+def displayImgWithLines(img, lines, title):
+    """
+    in :
+        img : Path vers une image
+        lines : Array des lignes detectees sur une image 
+        title : Titre de la fenetre d'affichage
+    out:
+        None
+    Fonction affichant une image avec les lignes detectees dessus
+    Bloque le deroulement jusqu'a la pression d'une touche du clavier
+    """
+
+    # Loads an image
+    src = cv.imread(img, cv.IMREAD_GRAYSCALE)
+    # Check if image is loaded fine
+    if src is None:
+        print ('Error opening image!')
+        return -1   
+    src = cv.cvtColor(src,cv.COLOR_GRAY2RGB)
+
+    if lines is not None:
+        for i in range(0, len(lines)):
+            l = lines[i]
+            cv.line(src, (int(l[0]), int(l[1])), (int(l[2]), int(l[3])), (0,0,255), 1, cv.LINE_AA)
+            cv.circle(src,getCenter(l),5,(0,255,0))  
+    src = cv.resize(src,(1000,1000))        
+    cv.imshow(title,src)
+    cv.waitKey()
+
+
+def detectClosestEdge(imgPath, markX,markY):
+    lines = getHoughLines(imgPath)
+    displayImgWithLines(imgPath,lines,"Kekito")
+    for i in range(len(lines)):
+        pass
 
 with open('HoleDetection\Points3D\Plaque1.npy', 'rb') as f:
     picked_points_Ro = np.load(f, allow_pickle=False)
 
-print(findMarkPosition("HoleDetection\ShittyDataset\image1.bmp"))
-
+print(findMarkPosition("HoleDetection\ShittyDataset\image4.bmp"))
+detectClosestEdge("HoleDetection\ShittyDataset\image4.bmp",10,10)
 #
 # while True:
     #print "Nouvelle grille"
