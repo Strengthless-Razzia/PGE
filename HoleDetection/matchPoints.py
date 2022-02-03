@@ -1,4 +1,5 @@
 # needed libraries
+from linecache import getline
 from random import random
 import cv2 as cv
 import numpy as np
@@ -113,11 +114,12 @@ def findMarkPosition(imgPath, debug = True):
         im_with_keypoints = cv.resize(im_with_keypoints,(1000,1000))
         cv.imshow("Keypoints", im_with_keypoints)
         cv.waitKey(0)
-
-    x = keypoints[0].pt[0]-bordersize
-    y = keypoints[0].pt[1]-bordersize
-
-    return (x,y)
+    if len(keypoints) != 0: 
+        x = keypoints[0].pt[0]-bordersize
+        y = keypoints[0].pt[1]-bordersize
+        return (x,y)
+    else:
+        return (0,0)
 
 def getHoughLines(img):
     """
@@ -136,10 +138,9 @@ def getHoughLines(img):
         print ('Error opening image!')
         return None
     
-    ## TODO Potentiel : Ajouter un pretraitement de l'image pour avoir une meilleure detection des edges
 
     imgEdges = cv.Canny(src, 50, 200, None, 3)
-    lines = cv.HoughLinesP(imgEdges, 1, np.pi / 180, 50, None, 50, 10)
+    lines = cv.HoughLinesP(imgEdges, 1, np.pi / 180, 50, 2, 400, 200)
     #Enlever une dimension inutile de HoughLinesP pour faciliter l'utilisation de lines
     (x,y,z) = lines.shape
     lines = np.resize(lines, (x,z))
@@ -179,22 +180,104 @@ def displayImgWithLines(img, lines, title):
             l = lines[i]
             cv.line(src, (int(l[0]), int(l[1])), (int(l[2]), int(l[3])), (0,0,255), 1, cv.LINE_AA)
             cv.circle(src,getCenter(l),5,(0,255,0))  
+
     src = cv.resize(src,(1000,1000))        
     cv.imshow(title,src)
     cv.waitKey()
 
+def getLineEquation(line):
+
+    if line[2]==line[0] :
+        slope = -1
+        b = -1   
+    else:
+        slope = (line[3]-line[1]) / (line[2]-line[0])
+        b = line[1] - line[0]*slope
+
+    return slope, b 
+
+def getPerpendicularSlope(slope):
+    if slope == -1:
+        return 0
+    elif slope == 0:
+        return -1
+    else:
+        return -1/slope
+
+def getSearchZone(line, slopePerp):
+    line1_B = line[1] - line[0]*slopePerp
+    line2_B = line[3] - line[2]*slopePerp
+    
+    return np.sort([line1_B, line2_B])
+
+def isMarkCloseby(line, markX,markY):
+    
+    slope, posAtOrigin = getLineEquation(line)
+    slopePerp = getPerpendicularSlope(slope)
+    if slopePerp == -1:
+        if markY <= max((line[1],line[3])) and markY >= min((line[1],line[3])):
+            return True
+        else:
+            return False
+
+    l_low,l_high = getSearchZone(line,slopePerp)
+
+    if markY <= markX*slopePerp + l_high and markY >= markX*slopePerp + l_low:
+        return True
+    else:
+        return False
+
+def getLineDistanceToMark(line, markX,markY):
+
+    a,b=getLineEquation(line)
+    if a == -1:
+        return abs(markX-line[0])
+    return abs(markY - a*markX - b)/np.sqrt(1+a**2)
+
+def displayUniqueLine(imgPath,foundLine,title):
+    src = cv.imread(imgPath, cv.IMREAD_GRAYSCALE)
+    src = cv.cvtColor(src,cv.COLOR_GRAY2RGB)
+    cv.line(src, (int(foundLine[0]), int(foundLine[1])), (int(foundLine[2]), int(foundLine[3])), (0,0,255), 5, cv.LINE_AA)
+    cv.circle(src,getCenter(foundLine),5,(0,255,0))  
+    src = cv.resize(src,(1000,1000))        
+    cv.imshow(title,src)
+    cv.waitKey()
 
 def detectClosestEdge(imgPath, markX,markY):
     lines = getHoughLines(imgPath)
-    displayImgWithLines(imgPath,lines,"Kekito")
-    for i in range(len(lines)):
-        pass
+    displayImgWithLines(imgPath,lines,"Before Traitement")
+    i = 0
+    while i < len(lines):
+        if not isMarkCloseby(lines[i], markX,markY):
+            lines = np.delete(lines,i,axis=0)
+        else:
+            i+=1
+    displayImgWithLines(imgPath,lines,"afterwards")
+    
+    foundLineDistance = 9999999
+    foundLine = None
+
+    for currentLine in lines:
+        currentDistance = getLineDistanceToMark(currentLine, markX,markY)
+
+
+        if currentDistance<foundLineDistance:
+            foundLine = currentLine
+            foundLineDistance = currentDistance     
+    if foundLine is None:
+        print "not found"
+        return None
+    else:
+        displayUniqueLine(imgPath,foundLine,"LineFound")
+        return foundLine
+    
 
 with open('HoleDetection\Points3D\Plaque1.npy', 'rb') as f:
     picked_points_Ro = np.load(f, allow_pickle=False)
 
-print(findMarkPosition("HoleDetection\ShittyDataset\image4.bmp"))
-detectClosestEdge("HoleDetection\ShittyDataset\image4.bmp",10,10)
+for i in range(1,5):
+    markX, markY = findMarkPosition("HoleDetection\ShittyDataset\image%u.bmp"%i)
+    detectClosestEdge("HoleDetection\ShittyDataset\image%u.bmp"%i,markX, markY)
 #
 # while True:
     #print "Nouvelle grille"
