@@ -117,12 +117,21 @@ def getPointsStraight(points, objective,threshold,display=False):
         
     return points
 
-with open('HoleDetection\Points3D\Plaque1.npy', 'rb') as f:
-    picked_points_Ro = np.load(f, allow_pickle=False)
+
+             
+if __name__ == '__main__':
+    liste_2d = generateNewGrid()
+    point_debut = np.array((0, 10))
+    point_fin = np.array((100, 50))
+  # print(recoligne(np.array([point_debut, point_fin]) ,liste_2d))
+    
+            
+    with open('HoleDetection\Points3D\Plaque1.npy', 'rb') as f:
+        picked_points_Ro = np.load(f, allow_pickle=False)
 
 
-while True:
-    print("Nouvelle grille")
-    grid = generateNewGrid()    
-    newGrid =rotate2dPoints(grid,(random()*360-180))
-    straightGrid=getPointsStraight(newGrid,grid, 0.05,display=True)
+    while True:
+        print("Nouvelle grille")
+        grid = generateNewGrid()    
+        newGrid =rotate2dPoints(grid,(random()*360-180))
+        straightGrid=getPointsStraight(newGrid,grid, 0.05,display=True)

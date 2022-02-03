@@ -4,17 +4,22 @@ import matchpoints
 
 def recoligne(liste_droite, liste_point):
     points_ordonnes = []
-    seuil_min = np.Infinity
-    seuil_max = 0
-    seuil = 10
+    seuil = 5
     
     for droite in liste_droite :
         points_associes = appartenance(droite, liste_point, seuil)
-        for point in new_liste :
-            dist = np.linalg.norm(new_liste[point]-new_liste[point+1])
+        for point in points_associes :
+            dist = np.linalg.norm(points_associes[point]-points_associes[point+1])
+            #la le point+1 pose souci, mettre une limite 
             if(dist <dist_min):
                 dist_min = dist
+        for point in points_associes : 
+            if(dist < dist_min*1.5):
                 points_ordonnes.append(point)
+            else : 
+                for i in range(dist%dist_min):
+                    points_ordonnes.append(0)
+                points_ordonnes.append(point)            
         
     return(points_ordonnes)
         
@@ -30,23 +35,7 @@ def appartenance(droite, liste_point, seuil):
                  
 if __name__ == '__main__':
     liste_2d = matchpoints.generateNewGrid()
-    point_debut = 50
-    point_fin = 10
-    print(recoligne(np.array([point_debut, point_fin]) ,liste_2d))
+    point_debut = np.array((0, 10))
+    point_fin = np.array((100, 50))
+    print(recoligne(np.array(([point_debut, point_fin], [point_fin, point_debut])) ,liste_2d))
     
-
-
-        
-
-#def appartenance(droite, liste_point, seuil_min, seuil_max):
- #   points_associes = []
-  #  for point in liste_point :
-   #     distance_point =np.cross(droite[0]- droite[1],point-droite[0])/np.linalg.norm(droite[1]-droite[0])
-    #    if(distance_point < seuil_min and points_associes.size() < 8):
-     #       seuil_min = distance_point
-      #      points_associes.append(point)
-       # if(distance_point > seuil_max and distance_point < 1.5*seuil_max and points_associes.size() <8):
-        #    seuil_max = distance_point
-         #   if(point not in points_associes):
-          #      points_associes.append(point)    
-   #     return(points_associes, seuil_max)
