@@ -1,0 +1,5 @@
+mkdir env
+C:\Python27\python.exe -m pip install --user virtualenv
+C:\Python27\python.exe -m virtualenv env
+env\Scripts\activate
+pip install -r requirements.txt
