@@ -5,7 +5,7 @@ import cv2 as cv
 import numpy as np
 import math 
 import matplotlib.pyplot as plt
-
+import extractHoles
 
 
 def rotate2dPoints(points, alpha):
@@ -61,7 +61,7 @@ def generateNewGrid(deletion = False, amountToDelete = 5):
 def sortPoints(points, sortAxis = 0):
     sortedPoints = np.zeros([0,2])
     while len(points) > 0:
-        foundIndex = -1
+        foundIndex = -10000
         temp=-1
         for i in range(len(points)):
             if points[i,sortAxis] >= temp:
@@ -270,18 +270,38 @@ def detectClosestEdge(imgPath, markX,markY):
     else:
         displayUniqueLine(imgPath,foundLine,"LineFound")
         return foundLine
+
+def getLinesToFind(plaqueModelPath):
+    with open('./Data/Plaque3/Model/Plaque_3.stp') as f:
+        file = f.readlines()
+
+    holeList = extractHoles.getAllCircles(file)
+    holeList = np.delete(holeList,3,axis=1)
+    holeList = np.delete(holeList,2,axis=1)
     
+    sortedList = sortPoints(holeList, 1)
+    print sortedList
 
-with open('HoleDetection\Points3D\Plaque1.npy', 'rb') as f:
-    picked_points_Ro = np.load(f, allow_pickle=False)
+def generatePointLines(imgPath,detectedPoints,plaqueModelPath):
+    markX, markY = findMarkPosition(imgPath)
+    foundLine = detectClosestEdge(imgPath,markX, markY)
+    getLinesToFind(plaqueModelPath)
 
-for i in range(1,5):
-    markX, markY = findMarkPosition("HoleDetection\ShittyDataset\image%u.bmp"%i)
-    detectClosestEdge("HoleDetection\ShittyDataset\image%u.bmp"%i,markX, markY)
-#
-# while True:
-    #print "Nouvelle grille"
-    #grid = generateNewGrid(True,5)    
-    #newGrid =rotate2dPoints(grid,(random()*360-180))
 
-    #straightGrid=getPointsStraight(newGrid,grid, 0.05,display=True)
+    #Labelliser les points
+    #Remet l'image droite sans perdre les labels (?)
+    #Reorganiser les points de haut en bas
+    #quand ecart trop grand, considere que nouvelle ligne
+    #reorganiser les lignes en X
+    #inshallah on a pas perdu les labels, et on renvoie les listes de points originaux mais dans le bon ordre cette fois
+    
+    pass
+
+
+generatePointLines("HoleDetection\ShittyDataset\image2.bmp",  None, "Data\Plaque1\Model\Plaque_1.stp")
+#with open('HoleDetection\Points3D\Plaque1.npy', 'rb') as f:
+#    picked_points_Ro = np.load(f, allow_pickle=False)
+
+#for i in range(1,5):
+#    markX, markY = findMarkPosition("HoleDetection\ShittyDataset\image%u.bmp"%i)
+#    detectClosestEdge("HoleDetection\ShittyDataset\image%u.bmp"%i,markX, markY)
