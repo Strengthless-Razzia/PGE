@@ -73,15 +73,25 @@ class PNPResultVisualizationThread(QThread):
         self.image_points = np.zeros((2,2))
 
         # Coefs de distortion de la camera calcule grace a la calibration
-        self.distortion_coefs =  np.array([ -0.11133023,  
-                                            1.96562876, 
-                                            -0.00787018, 
-                                            0.01009623, 
-                                            -7.61314684])
+        #self.distortion_coefs =  np.array([ -0.11133023,  
+        #                                    1.96562876, 
+        #                                    -0.00787018, 
+        #                                    0.01009623, 
+        #                                    -7.61314684])
+        
+        self.distortion_coefs = np.array([[ 1.55284357e-01,
+                                            -3.07067931e+00,  
+                                            5.16274059e-03, 
+                                            -4.78075223e-03,
+                                            1.80663250e+01]])
 
         # Matrice des params intrinseque de la camera calcule grace a la calibration
-        self.intrinsic_mat = np.array([ [4.95789049e+03, 0.00000000e+00, 1.39806998e+03],
-                                        [0.00000000e+00, 4.90165198e+03, 6.86145950e+02],
+        #self.intrinsic_mat = np.array([ [4.95789049e+03, 0.00000000e+00, 1.39806998e+03],
+        #                                [0.00000000e+00, 4.90165198e+03, 6.86145950e+02],
+        #                                [0.00000000e+00, 0.00000000e+00, 1.00000000e+00]])
+
+        self.intrinsic_mat = np.array([ [4.78103205e+03, 0.00000000e+00, 1.20113948e+03],
+                                        [0.00000000e+00, 4.77222528e+03, 1.14533714e+03],
                                         [0.00000000e+00, 0.00000000e+00, 1.00000000e+00]])
         
         # On initialise la matrice extrinseque 
