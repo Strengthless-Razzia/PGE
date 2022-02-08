@@ -17,19 +17,11 @@ def recoligne(liste_droite, liste_point):
             if(dist < dist_min*1.5):
                 points_ordonnes.append(point)
             else : 
-                for i in range(dist%dist_min):
+                for i in range(int(dist/dist_min)):
                     points_ordonnes.append(0)
                 points_ordonnes.append(point)            
         
     return(points_ordonnes)
-
-def appartenance(droite, liste_point, seuil):
-    points_associes=[]
-    for point in liste_point :
-        distance_point =np.cross(droite[0]- droite[1],point-droite[0])/np.linalg.norm(droite[1]-droite[0])
-        if(distance_point < seuil and len(points_associes) < 8):
-            points_associes.append(point)   
-    return(points_associes)
 
                  
 if __name__ == '__main__':

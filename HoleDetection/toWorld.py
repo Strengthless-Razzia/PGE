@@ -2,30 +2,17 @@ import numpy as np
 from matUtils import *
 
 
-def imageToWorld(intrinsic_mat, extrinsic_mat_tab, twod_point_tab) :  
+def imageToWorld(extrinsic_mat, coord_3d) :  
      
-    A = intrinsic_mat   
-    res_glob = []
-    
-    for n in range(np.size(twod_point_tab, 0)) : 
-        #keeping the homogenous parameters for inversing, and getting rid of it after 
-        extrinsic_mat_inv =np.linalg.inv(extrinsic_mat_tab[n])
-        
-        #trouver S sa mere la
-        real_world = np.dot( np.dot(twod_point_tab[n], np.linalg.inv(A)),  extrinsic_mat_inv[:3, :4])
-        real_world = real_world/real_world[3]
-        res_glob.append(real_world) 
-        print(real_world)
-        #jsais pas quoi foutre de ces resultats mon frerot, jpeux avoir X Y Z 1 en divisant tout par le dernier terme i guess, 
-        #mais la j'ai des valeurs si faibles, et la 4eme valeur si forte que j'aurais des X Y Z ridicules wtf
-    
-    return(res_glob)
+    R = extrinsic_mat[0:3, 0:3]
+    T = extrinsic_mat[0:3,3]
+    real_world = np.dot( np.linalg.inv(R), coord_3d - T )
+    print(real_world)
+
+    return(real_world)
 
 if __name__ == '__main__':
-    intrinsic = np.array([[4.95789049e+03, 0.00000000e+00, 1.39806998e+03],
-                         [0.00000000e+00, 4.90165198e+03, 6.86145950e+02],
-                         [0.00000000e+00, 0.00000000e+00, 1.00000000e+00]])
-    
+
     extrinsic = [np.array([[ 9.98756305e-01,  4.46229623e-02, -2.22404009e-02, -1.07663870e+02], #image1
        [-4.43514998e-02,  9.98937113e-01,  1.25534231e-02, 7.07322785e+01],
        [ 2.27769328e-02, -1.15514154e-02,  9.99673835e-01, 1.32870728e+03],
@@ -44,9 +31,6 @@ if __name__ == '__main__':
        [ 0.00000000e+00,  0.00000000e+00,  0.00000000e+00, 1.00000000e+00]])
     ]
     
-    twod_test = [np.array([46.00, 310.00, 1]), 
-                 np.array([211.00, 370.00, 1]), 
-                 np.array([355.00, 473.00, 1]), 
-                 np.array([415.00, 325.00, 1])]
+    coord = np.array([415.00, 325.00, 1]) 
     
-    result = imageToWorld(intrinsic, extrinsic, twod_test)
+    result = imageToWorld(extrinsic[0], coord)
