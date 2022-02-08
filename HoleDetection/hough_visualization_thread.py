@@ -77,6 +77,7 @@ class HoughVisualizationThread(QThread):
             image, points = self.hough()
             self.change_pixmap_signal.emit(image)
             self.change_points_signal.emit(points)
+            self.sleep(2)
 
     def stop(self):
         """Sets run flag to False and waits for thread to finish"""

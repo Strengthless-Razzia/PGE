@@ -51,6 +51,7 @@ class PNPResultVisualizationThread(QThread):
     # Il est connecte a la fonction update_canvas du widget
     update_plot_signal = pyqtSignal()
     nb_picked_points_signal = pyqtSignal(int)
+    update_error_signal = pyqtSignal(float)
     
     def __init__(self, fig):
         """
@@ -84,7 +85,10 @@ class PNPResultVisualizationThread(QThread):
                                         [0.00000000e+00, 0.00000000e+00, 1.00000000e+00]])
         
         # On initialise la matrice extrinseque 
-        self.extrinsic_mat = np.ones((4,4))
+        self.extrinsic_mat = np.array([ [1., 0., 0., 0.],
+                                        [0., 1., 0., 0.],
+                                        [0., 0., 1., 0.],
+                                        [0., 0., 0., 1.]])
 
         # On recupere la position des trous sur le modele 3D (merci Gael)
         with open('HoleDetection/Points3D/Plaque1.npy', 'rb') as f:
@@ -152,10 +156,9 @@ class PNPResultVisualizationThread(QThread):
     def run(self):
         self.nb_picked_points_signal.emit(0)
         while self._run_flag:
-            #self.process_pnp()
-            self.draw_model()
-            self.update_plot_signal.emit()
-            self.sleep(2)
+            self.update_error_signal.emit(self.calculate_error())
+            self.sleep(1)
+
 
     def stop(self):
         """Sets run flag to False and waits for thread to finish"""
@@ -164,6 +167,7 @@ class PNPResultVisualizationThread(QThread):
     
     def update_image_points(self, points):
         self.image_points = points[:,:2].astype(np.float32)
+        self.draw_model()
         #print("Updated points :", points)
 
     def process_pnp(self):
@@ -200,8 +204,30 @@ class PNPResultVisualizationThread(QThread):
         #self.extrinsic_mat = self.extrinsic_mat_remi
         return success
 
+    def calculate_error(self):
+
+        if len(self.picked_lines_RO) == 0:
+            return -1.
+
+        object_points = np.array(self.picked_lines_RO)
+        image_points = self.image_points[:object_points.shape[0],:]
+
+        P_cam = transform_point_with_matrix(self.extrinsic_mat, object_points)
+        u, v  = perspective_projection(self.intrinsic_mat, P_cam)
+        reprojected_image_points = np.array([u, v]).T
+
+        error = np.sum(np.sqrt(
+            np.dot(reprojected_image_points[:,0] - image_points[:,0], reprojected_image_points[:,0] - image_points[:,0]) + 
+            np.dot(reprojected_image_points[:,1] - image_points[:,1], reprojected_image_points[:,1] - image_points[:,1])
+            ))/object_points.shape[0]
+
+        
+        return error
+
+
     def update_draw_model_pnp_result(self, state):
         self.draw_model_pnp_result = state == 2
+        self.draw_model()
     
     def clear_picked_lines_RO(self):
         self.picked_lines_RO = []
@@ -209,6 +235,7 @@ class PNPResultVisualizationThread(QThread):
         for plot_element in self.plot_elements:
             plot_element.remove()
         self.plot_elements = []
+        self.draw_model()
 
     def draw_model(self):
         #print("Draw model")
@@ -220,6 +247,8 @@ class PNPResultVisualizationThread(QThread):
         self.axes2D.scatter(self.image_points[:, 0], self.image_points[:, 1], marker='x', color='r')
         for i, point in enumerate(self.image_points):
             self.axes2D.text(point[0], point[1], str(i+1), color='white')
+        
+        self.update_plot_signal.emit()
 
         
 
