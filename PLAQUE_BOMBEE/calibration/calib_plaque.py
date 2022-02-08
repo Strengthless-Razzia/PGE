@@ -35,7 +35,7 @@ prev_img_shape = None
 # in a given directory. Since no path is
 # specified, it will take current directory
 # jpg files alone
-images = glob.glob('PLAQUE_BOMBEE/calibration/data_2/*.bmp')
+images = glob.glob('PLAQUE_BOMBEE/calibration/data_1/*.bmp')
 
 for filename in images:
 	image = cv2.imread(filename)
@@ -46,8 +46,17 @@ for filename in images:
  
 	d = img.getdata()
 	new_image = []
+
+	"""
 	for item in d:
 		if item == (255,255,255):
+			new_image.append((0, 0, 0))
+		else:
+			new_image.append(item)
+	"""
+	treshold_white = 100
+	for item in d:
+		if item[0] >= 255-treshold_white and item[1] >= 255-treshold_white and item[2] >= 255-treshold_white:
 			new_image.append((0, 0, 0))
 		else:
 			new_image.append(item)
@@ -84,7 +93,7 @@ for filename in images:
 										CHECKERBOARD,
 										corners2, ret)
 
-	scale_percent = 50 # percent of original size
+	scale_percent = 30 # percent of original size
 	width = int(image.shape[1] * scale_percent / 100)
 	height = int(image.shape[0] * scale_percent / 100)
 	dim = (width, height)
