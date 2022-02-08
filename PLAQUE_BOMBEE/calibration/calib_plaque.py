@@ -35,30 +35,28 @@ prev_img_shape = None
 # in a given directory. Since no path is
 # specified, it will take current directory
 # jpg files alone
-images = glob.glob('PLAQUE_BOMBEE/calibration/old_data_1/*.bmp')
+images = glob.glob('PLAQUE_BOMBEE/calibration/data_2/*.bmp')
 
 for filename in images:
 	image = cv2.imread(filename)
 	grayColor = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-
+	
 	img = Image.open(filename)
 	img = img.convert("RGB")
  
 	d = img.getdata()
 	new_image = []
 	for item in d:
-		# change all white (also shades of whites)
-		# pixels to yellow
-		if item[0] in list(range(200, 256)):
+		if item == (255,255,255):
 			new_image.append((0, 0, 0))
 		else:
 			new_image.append(item)
-			
 	# update image data
 	img.putdata(new_image)
 	image = np.array(img)
-	img.save("grille_altere.jpg")
-
+	grayColor = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+	#img.save("grille_altere.jpg")
+	
 	# Find the chess board corners
 	# If desired number of corners are
 	# found in the image then ret = true
@@ -105,18 +103,19 @@ h, w = image.shape[:2]
 # passing the value of above found out 3D points (threedpoints)
 # and its corresponding pixel coordinates of the
 # detected corners (twodpoints)
-ret, matrix, distortion, r_vecs, t_vecs = cv2.calibrateCamera(threedpoints, twodpoints, grayColor.shape[::-1], None, None)
+if ret == True:
+	ret, matrix, distortion, r_vecs, t_vecs = cv2.calibrateCamera(threedpoints, twodpoints, grayColor.shape[::-1], None, None)
+	# Displaying required output
+	print(" Camera matrix:")
+	print(matrix)
 
+	print("\n Distortion coefficient:")
+	print(distortion)
 
-# Displaying required output
-print(" Camera matrix:")
-print(matrix)
+	print("\n Rotation Vectors:")
+	print(r_vecs)
 
-print("\n Distortion coefficient:")
-print(distortion)
-
-print("\n Rotation Vectors:")
-print(r_vecs)
-
-print("\n Translation Vectors:")
-print(t_vecs)
+	print("\n Translation Vectors:")
+	print(t_vecs)
+else:
+	print("Chessboard not detected")
