@@ -2,6 +2,7 @@
 from linecache import getline
 from random import random
 import cv2 as cv
+from cv2 import SORT_DESCENDING
 import numpy as np
 import math 
 import matplotlib.pyplot as plt
@@ -61,8 +62,8 @@ def generateNewGrid(deletion = False, amountToDelete = 5):
 def sortPoints(points, sortAxis = 0):
     sortedPoints = np.zeros([0,2])
     while len(points) > 0:
-        foundIndex = -10000
-        temp=-1
+        foundIndex = -1
+        temp=-1000
         for i in range(len(points)):
             if points[i,sortAxis] >= temp:
                 temp = points[i,sortAxis]
@@ -272,7 +273,7 @@ def detectClosestEdge(imgPath, markX,markY):
         return foundLine
 
 def getLinesToFind(plaqueModelPath):
-    with open('./Data/Plaque3/Model/Plaque_3.stp') as f:
+    with open('./Data/Plaque2/Model/Plaque_2.stp') as f:
         file = f.readlines()
 
     holeList = extractHoles.getAllCircles(file)
@@ -280,8 +281,21 @@ def getLinesToFind(plaqueModelPath):
     holeList = np.delete(holeList,2,axis=1)
     
     sortedList = sortPoints(holeList, 1)
-    print sortedList
-
+    newList = np.empty()
+    finishedLists=np.empty()
+    for point in sortedList:
+        if len(newList) == 0:
+            newList = np.append(newList,point)
+            continue
+        if(abs(newList[-1,1] - point[1]) <= 2):
+            newList = np.append(newList,point)
+            continue
+        else:
+            finishedLists = np.append(finishedLists,newList)
+            newList = []
+            newList = np.append(newList,point)
+            continue
+    print finishedLists
 def generatePointLines(imgPath,detectedPoints,plaqueModelPath):
     markX, markY = findMarkPosition(imgPath)
     foundLine = detectClosestEdge(imgPath,markX, markY)
