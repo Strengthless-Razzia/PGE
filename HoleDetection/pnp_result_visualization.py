@@ -8,7 +8,7 @@ import matplotlib.image as mpimg
 from mpl_toolkits.mplot3d import Axes3D
 from matUtils import *
 import cv2
-from pnp_from_scratch import pnp
+
 from imagePath import image as imagePath
 
 class PNPResultVisualizationWidget(QWidget):
@@ -91,7 +91,7 @@ class PNPResultVisualizationThread(QThread):
         with open('HoleDetection/Points3D/Plaque1.npy', 'rb') as f:
             array = np.load(f, allow_pickle=False)
         
-        # On trie les points par diametre descroissant
+        # On trie les points par diametre decroissant
         # Le diametre est stocke dans la derniere colonne que l'on ne
         # garde pas pour la suite 
         self.holes_point_3D = array[array[:, 3].argsort()][::-1][:, :3]
@@ -174,15 +174,7 @@ class PNPResultVisualizationThread(QThread):
 
         object_points = np.array(self.picked_lines_RO)
         image_points = self.image_points[:object_points.shape[0],:]
-
-
-
-        rotation_matrix, t_vec = pnp(object_points, image_points, self.intrinsic_mat)
-
-        self.extrinsic_mat_remi = np.ones((4, 4))
-        self.extrinsic_mat_remi[:3,:3] = rotation_matrix
-        self.extrinsic_mat_remi[:3,3] = t_vec.T
-
+        
         success, rotation_vector, translation_vector = cv2.solvePnP(
             object_points,
             image_points,
@@ -190,14 +182,8 @@ class PNPResultVisualizationThread(QThread):
             self.distortion_coefs,
             flags=0)
         
-        #print("Success :", success)
-
         self.extrinsic_mat = construct_matrix_from_vec(np.concatenate([rotation_vector, translation_vector]))
-
-        print("Extrinseque Remi \n", self.extrinsic_mat_remi)
         print("Extrinseque Opencv \n", self.extrinsic_mat)
-
-        #self.extrinsic_mat = self.extrinsic_mat_remi
         return success
 
     def update_draw_model_pnp_result(self, state):

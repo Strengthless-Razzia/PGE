@@ -1,35 +1,53 @@
 from matplotlib import projections
 import numpy as np
 from mpl_toolkits.mplot3d import Axes3D
+import cv2
+import numpy as np
 
 def construct_matrix_from_vec(vec_solution):
-    a = vec_solution[0]
-    b = vec_solution[1]
-    g = vec_solution[2]
+    assert(vec_solution.shape==(6L,1L))
+    
+    v1 = vec_solution[0]
+    v2 = vec_solution[1]
+    v3 = vec_solution[2]
     x = vec_solution[3]
     y = vec_solution[4]
     z = vec_solution[5]
 
-    matPos = np.array([[1.0, 0.0, 0.0, 0.0],
-                       [0.0, 1.0, 0.0, 0.0],
-                       [0.0, 0.0, 1.0, 0.0],
-                       [0.0, 0.0, 0.0, 1.0]])
+    matPos = np.eye(4)
 
-    matPos[0, 0] = np.cos(g) * np.cos(b)
-    matPos[0, 1] = np.cos(g) * np.sin(b) * np.sin(a) - np.sin(g) * np.cos(a)
-    matPos[0, 2] = np.cos(g) * np.sin(b) * np.cos(a) + np.sin(g) * np.sin(a)
     matPos[0, 3] = x
-
-    matPos[1, 0] = np.sin(g) * np.cos(b)
-    matPos[1, 1] = np.sin(g) * np.sin(b) * np.sin(a) + np.cos(g) * np.cos(a)
-    matPos[1, 2] = np.sin(g) * np.sin(b) * np.cos(a) - np.cos(g) * np.sin(a)
     matPos[1, 3] = y
-
-    matPos[2, 0] = -np.sin(b)
-    matPos[2, 1] = np.cos(b) * np.sin(a)
-    matPos[2, 2] = np.cos(b) * np.cos(a)
     matPos[2, 3] = z
+    
+    matPos[0:3,0:3] = cv2.Rodrigues(np.array([[v1],[v2],[v3]]))[0]
     return matPos
+    
+def R_to_bryant(R):
+    #transformation matrice rotation vers angles bryant
+    #bryant :
+    # 1 : lambda = rotation autour de x d'un angle lambda
+    # 2 : mu = rotation autour du nouveau y d'un angle mu
+    # 3 : nu = rotation autour du nouveau z d'un angle nu
+    # -pi<lambda<=pi
+    # -pi/2<=mu<=pi/2
+    # -pi<nu<=pi
+    assert(R.shape == (3,3))
+    assert(np.linalg.det(R) == 1)
+    assert (np.linalg.inv(R) == R.T).all()
+    print(R)
+    
+    if (R[0:1,2:3]==1) or (R[0:1,2:3]==-1):
+        mu = np.pi*R[0:1,2:3]/2
+        nu = np.arctan2(R[1:2,0:1],R[1:2,1:2])
+        lamb = 0
+        print("lambda and nu undefined !")
+    else:
+        lamb = np.arctan2(-R[1:2,2:3],R[2:3,2:3])#**2
+        mu = np.arcsin(R[0:1,2:3])#**3
+        nu = np.arctan2(-R[0:1,1:2],R[0:1,0:1])
+    return(lamb,mu,nu)
+   
 
 def transform_and_draw_model(edges_Ro, intrinsic, extrinsic, fig_axis):
     # ********************************************************************* #

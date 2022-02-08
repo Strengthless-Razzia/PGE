@@ -56,8 +56,6 @@ if __name__ == '__main__':
     clicked_points = np.delete(clicked_points, obj=random_index, axis=0)
     picked_points_Ro = np.delete(picked_points_Ro, obj=random_index, axis=0)
 
-    
-
     success, rotation_vector, translation_vector = cv2.solvePnP(
         picked_points_Ro, 
         clicked_points, 
