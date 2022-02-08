@@ -46,14 +46,7 @@ for filename in images:
  
 	d = img.getdata()
 	new_image = []
-
-	"""
-	for item in d:
-		if item == (255,255,255):
-			new_image.append((0, 0, 0))
-		else:
-			new_image.append(item)
-	"""
+	
 	treshold_white = 100
 	for item in d:
 		if item[0] >= 255-treshold_white and item[1] >= 255-treshold_white and item[2] >= 255-treshold_white:
