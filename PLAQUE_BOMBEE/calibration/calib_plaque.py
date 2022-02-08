@@ -1,9 +1,8 @@
 # Import required modules
 import cv2
 import numpy as np
-import os
 import glob
-
+from PIL import Image 
 
 # Define the dimensions of checkerboard
 CHECKERBOARD = (16,23)
@@ -12,7 +11,7 @@ CHECKERBOARD = (16,23)
 # stop the iteration when specified
 # accuracy, epsilon, is reached or
 # specified number of iterations are completed.
-criteria = (cv2.TERM_CRITERIA_EPS +
+criteria = (cv2.TERM_CRITERIA_EPS + 
 			cv2.TERM_CRITERIA_MAX_ITER, 30, 0.001)
 
 
@@ -36,11 +35,29 @@ prev_img_shape = None
 # in a given directory. Since no path is
 # specified, it will take current directory
 # jpg files alone
-images = glob.glob('PLAQUE_BOMBEE/calibration/data/*.jpg')
+images = glob.glob('PLAQUE_BOMBEE/calibration/old_data_1/*.bmp')
 
 for filename in images:
 	image = cv2.imread(filename)
 	grayColor = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+
+	img = Image.open(filename)
+	img = img.convert("RGB")
+ 
+	d = img.getdata()
+	new_image = []
+	for item in d:
+		# change all white (also shades of whites)
+		# pixels to yellow
+		if item[0] in list(range(200, 256)):
+			new_image.append((0, 0, 0))
+		else:
+			new_image.append(item)
+			
+	# update image data
+	img.putdata(new_image)
+	image = np.array(img)
+	img.save("grille_altere.jpg")
 
 	# Find the chess board corners
 	# If desired number of corners are
@@ -69,6 +86,13 @@ for filename in images:
 										CHECKERBOARD,
 										corners2, ret)
 
+	scale_percent = 50 # percent of original size
+	width = int(image.shape[1] * scale_percent / 100)
+	height = int(image.shape[0] * scale_percent / 100)
+	dim = (width, height)
+	
+	# resize image
+	image = cv2.resize(image, dim, interpolation = cv2.INTER_AREA) 
 	cv2.imshow('img', image)
 	cv2.waitKey(0)
 
