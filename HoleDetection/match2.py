@@ -1,3 +1,4 @@
+from calendar import c
 import numpy as np
 from matUtils import *
 import matchpoints
@@ -13,35 +14,43 @@ from matplotlib import pyplot as plt
 #### Sortie :   liste des lignes, chaque ligne un tableau comportant les points qui la composent
 
 def reOrient(liste_points, coord_bloc, coord_ligne):
-    delta = abs(coord_ligne[1]- coord_ligne[3])
+    delta = np.Infinity
     newPoints  = liste_points
     alpha = 5
     wasNeg = False
     wasPos = False
+    newLine = np.array([[coord_ligne[0], coord_ligne[1]], [coord_ligne[2], coord_ligne[3]]])
     #delta en y pour la ligne, a mettre a 0
     while(delta < -1  or delta > 1):
+        delta = abs(newLine[0, 1]- newLine[1, 1])
         if(delta>0):
         #tourner l'image dans un sens
-            newPoints = matchpoints.rotate2dPoints(newPoints, alpha)
+            newPoints = np.uint16(np.around(matchpoints.rotate2dPoints(newPoints, alpha)))
+            newLine = np.uint16(np.around(matchpoints.rotate2dPoints(newLine, alpha)))
             wasPos = True
             if(wasNeg):
                alpha = alpha-0.1
+            print("pos")
         if(delta<0):
         #touner l'image dans l'autre sens
-            newPoints = matchpoints.rotate2dPoints(newPoints, -alpha)
+            newPoints =np.uint16(np.around(matchpoints.rotate2dPoints(newPoints, -alpha)))
+            newLine = np.uint16(np.around(matchpoints.rotate2dPoints(newLine, alpha)))
             wasNeg = True
             if(wasPos):
                 alpha = alpha - 0.1
+            print("neg")
         ####AFFICHAGE DES POINTS
-        plt.show(newPoints)
+        plt.scatter(newPoints[:, 0], newPoints[:, 1], color='red', marker='x')
+        plt.scatter(newLine[:, 0], newLine[:, 1], color='blue', marker='x')
+        plt.show()
         # si on a deja ete trop dans un sens et qu'on est dans l'autre, on reduit le alpha. 
 
     # mettre le bloc au dessus s'il ne l'est pas 
     if(coord_bloc[1] < coord_ligne[1]):
         newPoints = matchpoints.rotate2dPoints(newPoints, 180)
-    plt.show(newPoints)
+    plt.plot(newPoints[0, :], newPoints[1, :])
+    plt.show()
     ##AFFIChAGE DU TOUT
-    print(newPoints)
     return(newPoints)
 
 
@@ -78,7 +87,7 @@ def hough(imgPath):
 
     if( not (circles is None)):
         circles = np.uint16(np.around(circles))
-        
+
     return circles[0,:,:2]
 
 
@@ -88,7 +97,6 @@ if __name__ == '__main__':
     markX, markY = matchpoints.findMarkPosition(imgPath)
     #position des deux points formant la ligne de la plaque la plus proche
     foundLine = matchpoints.detectClosestEdge(imgPath,markX, markY)
-    print(foundLine)
     #recuperation de toutes les coordonnees 2d des points de la plaque
     points = hough(imgPath)
     #reorientation de la plaque et calcul des nouvelles pos des points 
