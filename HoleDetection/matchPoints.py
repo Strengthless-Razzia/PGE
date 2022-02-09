@@ -74,6 +74,20 @@ def sortPoints(points, sortAxis = 0):
         points = np.delete(points,foundIndex,axis=0)
     return sortedPoints
 
+def sortPoints(points, sortAxis = 0):
+    sortedPoints = np.zeros([0,len(points[0,:])])
+    while len(points) > 0:
+        foundIndex = -1
+        temp=-1000
+        for i in range(len(points)):
+            if points[i,sortAxis] >= temp:
+                temp = points[i,sortAxis]
+                foundIndex=i
+        if foundIndex != -1:
+            sortedPoints=np.vstack((sortedPoints,points[foundIndex,:]))
+        points = np.delete(points,foundIndex,axis=0)
+    return sortedPoints
+
 def findMarkPosition(imgPath, debug = False):
     im = cv.imread(imgPath, cv.IMREAD_GRAYSCALE)
     bordersize = 10
@@ -279,11 +293,11 @@ def getLinesToFind(plaqueModelPath):
 
     holeList = extractHoles.getAllCircles(file)
     holeList = np.delete(holeList,3,axis=1)
-    holeList = np.delete(holeList,2,axis=1)
+    #holeList = np.delete(holeList,2,axis=1)
     
     sortedList = sortPoints(holeList, 1)
 
-    newList = np.empty((0,2))
+    newList = np.empty((0,3))
     finishedLists=[]
     for point in sortedList:
         if len(newList) == 0:
@@ -296,7 +310,7 @@ def getLinesToFind(plaqueModelPath):
         else:
             sortNewList = sortPoints(newList, 0) 
             finishedLists.append(sortNewList)
-            newList = np.empty([0,2])
+            newList = np.empty([0,3])
             newList=np.vstack((newList,point))
             continue
     finishedLists.append(sortPoints(newList, sortAxis=0))
