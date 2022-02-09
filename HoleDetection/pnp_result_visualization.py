@@ -72,6 +72,8 @@ class PNPResultVisualizationThread(QThread):
         # Array des points 2D detectes dans l'image 
         self.image_points = np.zeros((2,2))
 
+        self.inliers = None
+
         # Coefs de distortion de la camera calcule grace a la calibration
         #self.distortion_coefs =  np.array([ -0.11133023,  
         #                                    1.96562876, 
@@ -79,11 +81,11 @@ class PNPResultVisualizationThread(QThread):
         #                                    0.01009623, 
         #                                    -7.61314684])
         
-        self.distortion_coefs = np.array([[ 1.55284357e-01,
+        self.distortion_coefs = np.array([ 1.55284357e-01,
                                             -3.07067931e+00,  
                                             5.16274059e-03, 
                                             -4.78075223e-03,
-                                            1.80663250e+01]])
+                                            1.80663250e+01])
 
         # Matrice des params intrinseque de la camera calcule grace a la calibration
         #self.intrinsic_mat = np.array([ [4.95789049e+03, 0.00000000e+00, 1.39806998e+03],
@@ -120,6 +122,7 @@ class PNPResultVisualizationThread(QThread):
     
         X1_Ro, Y1_Ro, Z1_Ro = XYZ1_Ro[:, 0], XYZ1_Ro[:, 1], XYZ1_Ro[:, 2]
         X2_Ro, Y2_Ro, Z2_Ro = XYZ2_Ro[:, 0], XYZ2_Ro[:, 1], XYZ2_Ro[:, 2]
+
 
         
         def on_pick(event, picked_points_Ro):
@@ -174,11 +177,42 @@ class PNPResultVisualizationThread(QThread):
         """Sets run flag to False and waits for thread to finish"""
         self._run_flag = False
         self.wait()
+
+    def undistort(self, xy, iter_num=3):
+        k1 = self.distortion_coefs[0]
+        k2 = self.distortion_coefs[1]
+        p1 = self.distortion_coefs[2]
+        p2 = self.distortion_coefs[3]
+        k3 = self.distortion_coefs[4]
+        fx, fy = self.intrinsic_mat[0, 0], self.intrinsic_mat[1, 1]
+        cx, cy = self.intrinsic_mat[:2, 2]
+        x, y = xy.astype(float)[:,0], xy.astype(float)[:,1]
+        x = (x - cx) / fx
+        x0 = x
+        y = (y - cy) / fy
+        y0 = y
+        for _ in range(iter_num):
+            r2 = x ** 2 + y ** 2
+            k_inv = 1 / (1 + k1 * r2 + k2 * r2**2 + k3 * r2**3)
+            delta_x = 2 * p1 * x*y + p2 * (r2 + 2 * x**2)
+            delta_y = p1 * (r2 + 2 * y**2) + 2 * p2 * x*y
+            x = (x0 - delta_x) * k_inv
+            y = (y0 - delta_y) * k_inv
+        return np.array((x * fx + cx, y * fy + cy))
     
     def update_image_points(self, points):
-        self.image_points = points[:,:2].astype(np.float32)
+        #points_undistorded = cv2.undistortPoints(   points[:,:2].astype(np.float32), 
+        #                                            self.intrinsic_mat, 
+        #                                            self.distortion_coefs)
+        #
+        #self.image_points = np.squeeze(points_undistorded, axis=1)
+        #
+        self.image_points = self.undistort(points[:,:2]).T
+    
         self.draw_model()
         #print("Updated points :", points)
+    
+    
 
     def process_pnp(self):
         
@@ -189,7 +223,8 @@ class PNPResultVisualizationThread(QThread):
         object_points = np.array(self.picked_lines_RO)
         image_points = self.image_points[:object_points.shape[0],:]
 
-
+        rotation_guess = np.array([-3.1, 0., 0.])
+        translation_guess = np.array([0., 0., 1000.])
 
         #rotation_matrix, t_vec = pnp(object_points, image_points, self.intrinsic_mat)
 
@@ -197,11 +232,14 @@ class PNPResultVisualizationThread(QThread):
         #self.extrinsic_mat_remi = np.ones((4, 4))
         #self.extrinsic_mat_remi[:3,3] = t_vec.T
 
-        success, rotation_vector, translation_vector = cv2.solvePnP(
+        success, rotation_vector, translation_vector, self.inliers = cv2.solvePnPRansac(
             object_points,
             image_points,
             self.intrinsic_mat,
-            self.distortion_coefs,
+            np.zeros((4,)),
+            rvec=rotation_guess,
+            tvec=translation_guess,
+            useExtrinsicGuess=True,
             flags=0)
         
         #print("Success :", success)
@@ -209,18 +247,32 @@ class PNPResultVisualizationThread(QThread):
         self.extrinsic_mat = construct_matrix_from_vec(np.concatenate([rotation_vector, translation_vector]))
 
         #print("Extrinseque Remi \n", self.extrinsic_mat_remi)
-        print("Extrinseque Opencv \n", self.extrinsic_mat)
+        print("Rotation : " + str(rotation_vector))
+        print("Translation : " + str(translation_vector))
+        print("Extrinseque Opencv \n" +  str(self.extrinsic_mat))
 
         #self.extrinsic_mat = self.extrinsic_mat_remi
         return success
 
     def calculate_error(self):
 
-        if len(self.picked_lines_RO) == 0:
+        if self.inliers is None:
             return -1.
 
-        object_points = np.array(self.picked_lines_RO)
-        image_points = self.image_points[:object_points.shape[0],:]
+        if len(self.picked_lines_RO) == 0  or self.inliers.shape[0] == 0:
+            return -1.
+        
+        object_points = []
+        image_points = []
+        for inl in self.inliers:
+            object_points.append(self.picked_lines_RO[inl[0]])
+            image_points.append(self.image_points[inl[0]])
+
+        object_points = np.array(object_points)
+        image_points = np.array(image_points)
+
+        #object_points = np.array(self.picked_lines_RO)
+        #image_points = self.image_points[:object_points.shape[0],:]
 
         P_cam = transform_point_with_matrix(self.extrinsic_mat, object_points)
         u, v  = perspective_projection(self.intrinsic_mat, P_cam)
@@ -250,7 +302,7 @@ class PNPResultVisualizationThread(QThread):
     def draw_model(self):
         #print("Draw model")
         self.axes2D.cla()
-        self.axes2D.imshow(mpimg.imread("./Data/Plaque1/Cognex_LED/image4.bmp"))
+        self.axes2D.imshow(mpimg.imread("./Data/Plaque1/Cognex_LED/image2.bmp"))
         if self.draw_model_pnp_result:
             transform_and_draw_model(self.model3D_Ro, self.intrinsic_mat, self.extrinsic_mat, self.axes2D)  # 3D model drawing
 
