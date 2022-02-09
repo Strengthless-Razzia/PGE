@@ -92,9 +92,3 @@ print(matrix)
 
 print("\n Distortion coefficient:")
 print(distortion)
-
-print("\n Rotation Vectors:")
-print(r_vecs)
-
-print("\n Translation Vectors:")
-print(t_vecs)
