@@ -29,7 +29,7 @@ def main_localisation(  type_plaque,
     try:
         # On recupere la position des trous sur le modele 3D (merci Gael)
         with open(chemin_modele, 'rb') as f:
-            object_points = np.load(f, allow_pickle=False)[:,:2]
+            object_points = np.load(f, allow_pickle=False)[:,:3]
 
     except FileNotFoundError:
         print(f"Fichier {chemin_modele} non trouve")
@@ -44,6 +44,9 @@ def main_localisation(  type_plaque,
         
 
     #================================ Matching des points ================================
+
+
+    # S'assurer que les objects points image points sont de taille (n, 3) et (n, 2) avec n >= 4
 
     try:
         rotation_vector, translation_vector, inliers = process_pnp(object_points, image_points, matrice_intrinseque)
