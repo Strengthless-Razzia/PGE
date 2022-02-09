@@ -15,7 +15,7 @@ def main_localisation(  type_plaque,
                         coefficients_de_distortion):
     """main_localisation does blah blah blah.
 
-    :type_plaque: "Tole cintree" ou "Tole plate ou Tole epaisse"
+    :type_plaque: "Tole cintree" ou "Tole plate" ou Tole epaisse"
     :chemin_modele: 
     :photo: 
     :matrice_homogene_3D_outils:
@@ -91,7 +91,7 @@ if __name__ == "__main__":
 
 
     main_localisation(
-        3, 
+        "Tole plate", 
         'HoleDetection/Points3D/Plaque1.npy', 
         cv2.imread("./Data/Plaque1/Cognex_LED/image2.bmp"), 
         None, 
