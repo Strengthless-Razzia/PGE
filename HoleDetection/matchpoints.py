@@ -10,7 +10,6 @@ import extractHoles
 
 
 def rotate2dPoints(points, alpha):
-    # angle of rotation 10 degrees
     alpha = -alpha*math.pi/180
     # calculating "center of gravity" = rotation point 
     mean = np.mean(points,axis=0)
