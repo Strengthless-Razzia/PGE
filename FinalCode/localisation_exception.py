@@ -1,15 +1,11 @@
 
 
+#definition des classes erreurs
 class UntrustworthyLocalisationError(Exception):
-
-    def __init__(self, erreur) -> None:
-        super().__init__()
-        self.erreur = erreur
-
-    def __repr__(self):
-        return "La localisation est de mauvaise facture, l'erreur est de " + str(self.erreur)
-
+    def __init__(self, erreur):
+        super(UntrustworthyLocalisationError, self).__init__("La localisation est de mauvaise facture, l'erreur est de " + str(erreur))
 
 class MatchingError(Exception):
-    def __repr__(self):
-        return "Le matching n'a pas bien fonctionne"
+    def __init__(self, message):
+        self.message = message
+        super(MatchingError, self).__init__(message)

@@ -23,6 +23,7 @@ def main_localisation(  type_plaque,
     :matrice_intrinseque:
     :coefficients_de_distortion:
     :return: [x, y, z, alpha, beta, gamma], matrice_extrinseque dans le repere monde OU None si la plaque n'est pas detectee"""
+    
 
     image_points = hough(photo)
 
@@ -32,7 +33,7 @@ def main_localisation(  type_plaque,
             object_points = np.load(f, allow_pickle=False)[:,:3]
 
     except FileNotFoundError:
-        print(f"Fichier {chemin_modele} non trouve")
+        print("Fichier " + str(chemin_modele) + " non trouve")
         
 
     except OSError:
@@ -48,8 +49,11 @@ def main_localisation(  type_plaque,
 
     # S'assurer que les objects points image points sont de taille (n, 3) et (n, 2) avec n >= 4
 
+    print(image_points.shape)
+    print(object_points.shape)
+
     try:
-        rotation_vector, translation_vector, inliers = process_pnp(object_points, image_points, matrice_intrinseque)
+        rotation_vector, translation_vector, inliers = process_pnp(object_points, image_points, matrice_intrinseque, coefficients_de_distortion)
 
     except Exception as e:
         print(e)
@@ -62,6 +66,8 @@ def main_localisation(  type_plaque,
 
     try:
         erreur = calcule_erreur(object_points, image_points, inliers, matrice_extrinseque, matrice_intrinseque)
+        print(inliers)
+        print(erreur)
     except Exception as e:
         print(e)
 

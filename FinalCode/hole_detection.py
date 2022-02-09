@@ -21,13 +21,11 @@ def hough(image):
 
         circles = cv2.HoughCircles(imgGray, cv2.HOUGH_GRADIENT, dp, minDist,
                                     param1=p1,param2=p2,minRadius=minR,maxRadius=maxR)
-
         if circles is None:
             return None
 
         return circles[0,:,:2]
     
     except Exception as e:
-        pass
+        print(e)
 
-    finally: return None
