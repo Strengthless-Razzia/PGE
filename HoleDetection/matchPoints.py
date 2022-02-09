@@ -3,6 +3,7 @@ from linecache import getline
 from random import random
 import cv2 as cv
 from cv2 import SORT_DESCENDING
+from cv2 import sort
 import numpy as np
 import math 
 import matplotlib.pyplot as plt
@@ -73,7 +74,7 @@ def sortPoints(points, sortAxis = 0):
         points = np.delete(points,foundIndex,axis=0)
     return sortedPoints
 
-def findMarkPosition(imgPath, debug = True):
+def findMarkPosition(imgPath, debug = False):
     im = cv.imread(imgPath, cv.IMREAD_GRAYSCALE)
     bordersize = 10
     im = cv.copyMakeBorder(
@@ -246,14 +247,14 @@ def displayUniqueLine(imgPath,foundLine,title):
 
 def detectClosestEdge(imgPath, markX,markY):
     lines = getHoughLines(imgPath)
-    displayImgWithLines(imgPath,lines,"Before Traitement")
+    #displayImgWithLines(imgPath,lines,"Before Traitement")
     i = 0
     while i < len(lines):
         if not isMarkCloseby(lines[i], markX,markY):
             lines = np.delete(lines,i,axis=0)
         else:
             i+=1
-    displayImgWithLines(imgPath,lines,"afterwards")
+    #displayImgWithLines(imgPath,lines,"afterwards")
     
     foundLineDistance = 9999999
     foundLine = None
@@ -269,11 +270,11 @@ def detectClosestEdge(imgPath, markX,markY):
         print "not found"
         return None
     else:
-        displayUniqueLine(imgPath,foundLine,"LineFound")
+        #displayUniqueLine(imgPath,foundLine,"LineFound")
         return foundLine
 
 def getLinesToFind(plaqueModelPath):
-    with open('./Data/Plaque2/Model/Plaque_2.stp') as f:
+    with open(plaqueModelPath) as f:
         file = f.readlines()
 
     holeList = extractHoles.getAllCircles(file)
@@ -281,21 +282,34 @@ def getLinesToFind(plaqueModelPath):
     holeList = np.delete(holeList,2,axis=1)
     
     sortedList = sortPoints(holeList, 1)
-    newList = np.empty()
-    finishedLists=np.empty()
+
+    newList = np.empty((0,2))
+    finishedLists=[]
     for point in sortedList:
         if len(newList) == 0:
-            newList = np.append(newList,point)
+            newList=np.vstack([newList,point])
             continue
+
         if(abs(newList[-1,1] - point[1]) <= 2):
-            newList = np.append(newList,point)
+            newList=np.vstack([newList,point])
             continue
         else:
-            finishedLists = np.append(finishedLists,newList)
-            newList = []
-            newList = np.append(newList,point)
+            sortNewList = sortPoints(newList, 0) 
+            finishedLists.append(sortNewList)
+            newList = np.empty([0,2])
+            newList=np.vstack((newList,point))
             continue
-    print finishedLists
+    finishedLists.append(sortPoints(newList, sortAxis=0))
+
+    outValues = np.array(finishedLists)
+    print "Shape of the list : ",outValues.shape
+    return outValues
+
+    
+    
+
+    
+
 def generatePointLines(imgPath,detectedPoints,plaqueModelPath):
     markX, markY = findMarkPosition(imgPath)
     foundLine = detectClosestEdge(imgPath,markX, markY)
