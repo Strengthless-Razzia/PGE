@@ -2,7 +2,7 @@ import numpy as np
 from matUtils import *
 import matchpoints
 import cv2
-import matplotlib as plt
+from matplotlib import pyplot as plt
 
 
 #### Entree :   liste de points d'origine 
@@ -13,28 +13,35 @@ import matplotlib as plt
 #### Sortie :   liste des lignes, chaque ligne un tableau comportant les points qui la composent
 
 def reOrient(liste_points, coord_bloc, coord_ligne):
-    delta = abs(coord_ligne[0, 1]- coord_ligne[1,1])
+    delta = abs(coord_ligne[1]- coord_ligne[3])
     newPoints  = liste_points
+    alpha = 5
+    wasNeg = False
+    wasPos = False
     #delta en y pour la ligne, a mettre a 0
-    while(delta[1] < -1  or delta[1] > 1):
-        if(delta[1]>0):
+    while(delta < -1  or delta > 1):
+        if(delta>0):
         #tourner l'image dans un sens
             newPoints = matchpoints.rotate2dPoints(newPoints, alpha)
             wasPos = True
             if(wasNeg):
                alpha = alpha-0.1
-        if(delta[1]<0):
+        if(delta<0):
         #touner l'image dans l'autre sens
             newPoints = matchpoints.rotate2dPoints(newPoints, -alpha)
             wasNeg = True
             if(wasPos):
                 alpha = alpha - 0.1
+        ####AFFICHAGE DES POINTS
+        plt.show(newPoints)
         # si on a deja ete trop dans un sens et qu'on est dans l'autre, on reduit le alpha. 
 
     # mettre le bloc au dessus s'il ne l'est pas 
-    #if(coord_bloc[1] < coord_ligne[1]):
-       # newPoints = matchpoints.rotate2dPoints(newPoints, 180)
-    plt.show(coord_bloc, liste_points)
+    if(coord_bloc[1] < coord_ligne[1]):
+        newPoints = matchpoints.rotate2dPoints(newPoints, 180)
+    plt.show(newPoints)
+    ##AFFIChAGE DU TOUT
+    print(newPoints)
     return(newPoints)
 
 
@@ -81,6 +88,7 @@ if __name__ == '__main__':
     markX, markY = matchpoints.findMarkPosition(imgPath)
     #position des deux points formant la ligne de la plaque la plus proche
     foundLine = matchpoints.detectClosestEdge(imgPath,markX, markY)
+    print(foundLine)
     #recuperation de toutes les coordonnees 2d des points de la plaque
     points = hough(imgPath)
     #reorientation de la plaque et calcul des nouvelles pos des points 
