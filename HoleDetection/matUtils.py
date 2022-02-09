@@ -3,7 +3,14 @@ import numpy as np
 from mpl_toolkits.mplot3d import Axes3D
 import cv2
 import numpy as np
+from numpy import isclose
+     
 
+def isRotationMatrix(R,rtol=1.e-06):
+    assert(R.shape == (3,3)),"Rotation matrix must be 3x3"
+    assert(isclose(np.linalg.det(R),1,rtol=rtol)),"Rotation matrix must have it's determinant equal to 1"
+    assert np.isclose(np.linalg.inv(R),R.T,rtol).all(),"Rotation matrix must be orthogonal"   
+    
 def construct_matrix_from_vec(vec_solution):
     assert(vec_solution.shape==(6L,1L))
     
@@ -21,7 +28,38 @@ def construct_matrix_from_vec(vec_solution):
     matPos[2, 3] = z
     
     matPos[0:3,0:3] = cv2.Rodrigues(np.array([[v1],[v2],[v3]]))[0]
+    isRotationMatrix(matPos[0:3,0:3])
     return matPos
+    
+def angle_to_R(angle):
+    """
+    in : tuple of bryan angles
+    output : rotation matrix
+    """
+    assert(type(angle)==type(())),"type tuple expected"
+    assert(len(angle)==3),"expected 3 angles"
+    r1 = angle[0]
+    r2 = angle[1]
+    r3 = angle[2]
+    s1=np.sin(r1)
+    c1=np.cos(r1)
+    s2=np.sin(r2)
+    c2=np.cos(r2)
+    s3=np.sin(r3)
+    c3=np.cos(r3)
+    R1 = np.array([ [1.,0.,0.],
+                    [0.,c1,-s1],
+                    [0.,s1,c1]])
+    R2 = np.array([ [c2,0.,s2],
+                    [0.,1.,0.],
+                    [-s2,0.,c2]])
+    R3 = np.array([ [c3,-s3,0.],
+                    [s3,c3,0.],
+                    [0.,0.,1.]])
+    R = np.dot(R1,np.dot(R2,R3))
+    isRotationMatrix(R)
+    return R
+    
     
 def R_to_bryant(R):
     #transformation matrice rotation vers angles bryant
@@ -32,20 +70,27 @@ def R_to_bryant(R):
     # -pi<lambda<=pi
     # -pi/2<=mu<=pi/2
     # -pi<nu<=pi
-    assert(R.shape == (3,3))
-    assert(np.linalg.det(R) == 1)
-    assert (np.linalg.inv(R) == R.T).all()
-    print(R)
     
+    isRotationMatrix(R)
+    
+    #A FIXER (valeurs numeriquement superieures a 1 parfois, arcsin plante...)
+    for i in range(3):
+        for j in range(3):
+            if(R[i:i+1,j:j+1] >1):
+                R[i:i+1,j:j+1] = 1.
+            if(R[i:i+1,j:j+1] <-1):
+                R[i:i+1,j:j+1] = -1.
+
+    isRotationMatrix(R)
     if (R[0:1,2:3]==1) or (R[0:1,2:3]==-1):
-        mu = np.pi*R[0:1,2:3]/2
-        nu = np.arctan2(R[1:2,0:1],R[1:2,1:2])
+        mu = float(np.pi*R[0:1,2:3]/2)
+        nu = float(np.arctan2(R[1:2,0:1],R[1:2,1:2]))
         lamb = 0
         print("lambda and nu undefined !")
     else:
-        lamb = np.arctan2(-R[1:2,2:3],R[2:3,2:3])#**2
-        mu = np.arcsin(R[0:1,2:3])#**3
-        nu = np.arctan2(-R[0:1,1:2],R[0:1,0:1])
+        lamb = float(np.arctan2(-R[1:2,2:3],R[2:3,2:3])**2)
+        mu = float(np.arcsin(R[0:1,2:3]))**3
+        nu = float(np.arctan2(-R[0:1,1:2],R[0:1,0:1]))
     return(lamb,mu,nu)
    
 

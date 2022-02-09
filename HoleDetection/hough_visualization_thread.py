@@ -1,7 +1,7 @@
 import cv2
 from PyQt5.QtCore import pyqtSignal, QThread
 import numpy as np
-from imagePath import image as imagePath
+from Paths import image as imagePath
 
 class HoughVisualizationThread(QThread):
     change_pixmap_signal = pyqtSignal(np.ndarray)

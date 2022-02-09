@@ -7,6 +7,7 @@ from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 import matplotlib.image as mpimg
 from mpl_toolkits.mplot3d import Axes3D
 from matUtils import *
+from Paths import model as modelPath
 import cv2
 
 from imagePath import image as imagePath
@@ -73,22 +74,22 @@ class PNPResultVisualizationThread(QThread):
         self.image_points = np.zeros((2,2))
 
         # Coefs de distortion de la camera calcule grace a la calibration
-        self.distortion_coefs =  np.array([ -0.11133023,  
-                                            1.96562876, 
-                                            -0.00787018, 
-                                            0.01009623, 
-                                            -7.61314684])
+        self.distortion_coefs =  np.array([ 1.55284357e-01,  
+                                            -3.07067931e+00, 
+                                            5.16274059e-03, 
+                                            -4.78075223e-03, 
+                                            1.80663250e+01])
 
         # Matrice des params intrinseque de la camera calcule grace a la calibration
-        self.intrinsic_mat = np.array([ [4.95789049e+03, 0.00000000e+00, 1.39806998e+03],
-                                        [0.00000000e+00, 4.90165198e+03, 6.86145950e+02],
+        self.intrinsic_mat = np.array([ [4.78103205e+03, 0.00000000e+00, 1.20113948e+03],
+                                        [0.00000000e+00, 4.77222528e+03, 1.14533714e+03],
                                         [0.00000000e+00, 0.00000000e+00, 1.00000000e+00]])
         
         # On initialise la matrice extrinseque 
         self.extrinsic_mat = np.ones((4,4))
 
         # On recupere la position des trous sur le modele 3D (merci Gael)
-        with open('HoleDetection/Points3D/Plaque1.npy', 'rb') as f:
+        with open(modelPath, 'rb') as f:
             array = np.load(f, allow_pickle=False)
         
         # On trie les points par diametre decroissant
@@ -183,7 +184,8 @@ class PNPResultVisualizationThread(QThread):
             flags=0)
         
         self.extrinsic_mat = construct_matrix_from_vec(np.concatenate([rotation_vector, translation_vector]))
-        print("Extrinseque Opencv \n", self.extrinsic_mat)
+        print("Extrinseque Opencv :\n{}".format(self.extrinsic_mat))
+        print("Tait-Bryan angles : {}".format(R_to_bryant(self.extrinsic_mat[0:3,0:3])))
         return success
 
     def update_draw_model_pnp_result(self, state):
