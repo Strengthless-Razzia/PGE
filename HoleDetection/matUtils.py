@@ -64,7 +64,7 @@ def transform_and_draw_model(edges_Ro, intrinsic, extrinsic, fig_axis):
     [u_2, v_2] = perspective_projection(intrinsic, P2_cam)
 
     for p in range(edges_Ro.shape[0]):
-        fig_axis.plot([u_1[p], u_2[p]], [v_1[p], v_2[p]], color='pink')
+        fig_axis.plot([u_1[p], u_2[p]], [v_1[p], v_2[p]], color='m')
 
 
 def perspective_projection(intrinsic, P_c):
@@ -75,7 +75,7 @@ def perspective_projection(intrinsic, P_c):
     # Input:                                                #
     #   intrinsic : ndarray[3x3] - parametres intrinseques  #
     #   P_c : ndarray[Nx3],                                 #
-    #         N = nombre de points à transformer            #
+    #         N = nombre de points a transformer            #
     #         3 = (X, Y, Z) les coordonnees des points      #
     # Output:                                               #
     #   u, v : deux ndarray[N] contenant les                #
@@ -84,8 +84,6 @@ def perspective_projection(intrinsic, P_c):
     
     Z = P_c[:,2]
     [u,v,tmp] = (1/Z) * np.dot(intrinsic, P_c.T)
-
-
 
     return u, v
 

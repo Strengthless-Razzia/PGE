@@ -1,5 +1,5 @@
 from PyQt5 import QtGui
-from PyQt5.QtWidgets import QWidget, QApplication, QLabel, QVBoxLayout, QPushButton, QCheckBox
+from PyQt5.QtWidgets import QWidget, QApplication, QLabel, QVBoxLayout, QPushButton, QCheckBox, QHBoxLayout
 from PyQt5.QtGui import QPixmap, QFont
 import sys
 import cv2
@@ -13,7 +13,7 @@ from pnp_result_visualization import PNPResultVisualizationWidget, PNPResultVisu
 
 class App(QWidget):
     def __init__(self):
-        super().__init__()
+        super(App,self).__init__()
         self.setWindowTitle("Qt hough parametres")
         self.disply_width = 1000
         self.display_height = 1000
@@ -21,56 +21,63 @@ class App(QWidget):
         self.image_label = QLabel(self)
         self.image_label.resize(self.disply_width, self.display_height)
         # create a text label
-        self.textLabel = QLabel('Parametres')
+        self.textLabelParam = QLabel('Parametres')
+        self.textLabelTitle= QLabel('Hough Hole Detection')
         
         # create sliders
-        self.p1_slider = CustomSlider(30, 1.0, 100, "p1")
-        self.p2_slider = CustomSlider(30, 1.0, 100, "p2")
+        self.p1_slider = CustomSlider(100., 1.0, 200., "p1")
+        self.p2_slider = CustomSlider(30., 1.0, 200., "p2")
 
-        self.minR_slider = CustomSlider(10, 0, 100, "minR")
-        self.maxR_slider = CustomSlider(60, 0, 100, "maxR")
-        self.minDist_slider = CustomSlider(295, 0, 500, "minDist")
-        self.brightness_value_slider = CustomSlider(10, 0, 100, "brightness")
-
-        # create a vertical box layout and add the two labels and sliders
-        mainbox = QVBoxLayout()
-        mainbox.addWidget(self.image_label)
-
-        vbox = QVBoxLayout()
-        vbox.addWidget(self.textLabel)
+        self.minR_slider = CustomSlider(0., 0., 100., "minR")
+        self.maxR_slider = CustomSlider(100., 0., 100., "maxR")
+        self.minDist_slider = CustomSlider(150., 0., 500., "minDist")
+        self.brightness_value_slider = CustomSlider(10., 0., 100., "brightness")    
         
-        vbox.addWidget(self.p1_slider)
-        vbox.addWidget(self.p2_slider)
 
-        vbox.addWidget(self.minR_slider)
-        vbox.addWidget(self.maxR_slider)
-        vbox.addWidget(self.minDist_slider)
-        vbox.addWidget(self.brightness_value_slider)
-        # set the vbox layout as the widgets layout
-        mainbox.addLayout(vbox)
+        vbox_hough = QVBoxLayout()
+        vbox_hough.addWidget(self.textLabelTitle)
+        vbox_hough.addWidget(self.image_label)
+        vbox_hough.addWidget(self.textLabelParam)
+        
+        vbox_hough.addWidget(self.p1_slider)
+        vbox_hough.addWidget(self.p2_slider)
 
-        solvePNPButton = QPushButton("SOLVE PNP BATARD", self)
-        solvePNPButton.setFixedHeight(100)
-        solvePNPButton.setStyleSheet("background-color: red; color: white")
+        vbox_hough.addWidget(self.minR_slider)
+        vbox_hough.addWidget(self.maxR_slider)
+        vbox_hough.addWidget(self.minDist_slider)
+        vbox_hough.addWidget(self.brightness_value_slider)
+        
+        
+        textLabelTitlePnP = QLabel("PnP solving")
+        self.solvePNPButton = QPushButton("SOLVE PNP", self)
+        self.solvePNPButton.setFixedHeight(80)
+        self.solvePNPButton.setStyleSheet("background-color: red; color: white")
         font_button = QFont('Times', 20)
         font_button.setBold(True)
-        solvePNPButton.setFont(font_button)
-        
-        mainbox.addWidget(solvePNPButton)
-
+        self.solvePNPButton.setFont(font_button)
         draw_pnp_result_checkbox = QCheckBox(self)
         draw_pnp_result_checkbox.setText("Draw Model on Image")
-
-        mainbox.addWidget(draw_pnp_result_checkbox)
-
         clear_object_points_button  = QPushButton("Clear 3D points", self)
-
-        mainbox.addWidget(clear_object_points_button)
-
         self.pnp_widget = PNPResultVisualizationWidget()
+        self.error_label = QLabel("-1")
+        font_error = QFont('Times', 20)
+        font_error.setBold(True)
+        self.error_label.setFont(font_error)
+        
 
-        mainbox.addWidget(self.pnp_widget)
+        vbox_pnp = QVBoxLayout()
+        vbox_pnp.addWidget(textLabelTitlePnP)
+        vbox_pnp.addWidget(self.solvePNPButton)
+        vbox_pnp.addWidget(draw_pnp_result_checkbox)
+        vbox_pnp.addWidget(clear_object_points_button)
+        vbox_pnp.addWidget(self.pnp_widget)
+        vbox_pnp.addWidget(QLabel("Error"))
+        vbox_pnp.addWidget(self.error_label)
 
+
+        mainbox = QHBoxLayout()
+        mainbox.addLayout(vbox_hough)
+        mainbox.addLayout(vbox_pnp)
         self.setLayout(mainbox)
 
         # create the video capture thread
@@ -80,8 +87,10 @@ class App(QWidget):
         self.threadHough.change_pixmap_signal.connect(self.update_image)
         self.threadHough.change_points_signal.connect(self.threadPNP.update_image_points)
         self.threadPNP.update_plot_signal.connect(self.pnp_widget.update_canvas)
-        
-        solvePNPButton.clicked.connect(self.threadPNP.process_pnp)
+        self.threadPNP.nb_picked_points_signal.connect(self.update_button)
+        self.threadPNP.update_error_signal.connect(self.update_error)
+
+        self.solvePNPButton.clicked.connect(self.threadPNP.process_pnp)
         draw_pnp_result_checkbox.stateChanged.connect(self.threadPNP.update_draw_model_pnp_result)
         clear_object_points_button.clicked.connect(self.threadPNP.clear_picked_lines_RO)
         # connect sliders
@@ -116,6 +125,14 @@ class App(QWidget):
         convert_to_Qt_format = QtGui.QImage(rgb_image.data, w, h, bytes_per_line, QtGui.QImage.Format_RGB888)
         p = convert_to_Qt_format.scaled(self.disply_width, self.display_height, Qt.KeepAspectRatio)
         return QPixmap.fromImage(p)
+    
+    def update_button(self, nb_points):
+        self.solvePNPButton.setText("SOLVE P-{:d}-P".format((nb_points)))
+        self.solvePNPButton.setEnabled(nb_points >= 4)
+    
+    def update_error(self, error):
+        self.error_label.setText("{:.2f}".format(error))
+
     
 if __name__=="__main__":
     app = QApplication(sys.argv)

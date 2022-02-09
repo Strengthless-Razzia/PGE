@@ -60,6 +60,7 @@ def generateNewGrid(deletion = False, amountToDelete = 5):
 def sortPoints(points, sortAxis = 0):
     sortedPoints = np.zeros([0,2])
     while len(points) > 0:
+
         temp=-1
         for i in range(len(points)):
             if points[i,sortAxis] >= temp:
@@ -67,6 +68,7 @@ def sortPoints(points, sortAxis = 0):
                 foundIndex=i
 
         sortedPoints=np.vstack((sortedPoints,points[foundIndex,:]))
+
         points = np.delete(points,foundIndex,axis=0)
     return sortedPoints
 

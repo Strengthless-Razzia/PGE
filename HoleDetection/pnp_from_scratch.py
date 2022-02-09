@@ -3,7 +3,7 @@ import itertools
 import cv2
 
 #////////////////////////////#
-#//  Données essentielles  //#
+#//  Donnees essentielles  //#
 #////////////////////////////#
 Points_3D = np.array([[-150., -175., 5.],
                     [ -80., -175., 5.],
@@ -44,7 +44,7 @@ def pnp(Point3D,Point2D,IntrinsicMat,debug=False):
     nbPoint,notusedvalue = Point3D.shape
     max = nbPoint - 6
     if debug:
-        print("Nombre de points supprimés: ", max)
+        print("Nombre de points supprimes: ", max)
 
     for p in range(max):
         Point3D = np.delete(Point3D, p, 0)
@@ -54,7 +54,9 @@ def pnp(Point3D,Point2D,IntrinsicMat,debug=False):
     equations = np.zeros([18,12])
     C = np.array([[0, 0 ,0 ,0 ,0, 0, 0, 0, 0, 0, 0, 0]])
 
-    for p2, p3 in itertools.zip_longest(Point2D, Point3D):
+    for i in range(min(len(Point2D), len(Point3D))):
+        p2 = Point2D[i]
+        p3 = Point3D[i]
         x = p2[0]
         y = p2[1]
 
@@ -71,9 +73,9 @@ def pnp(Point3D,Point2D,IntrinsicMat,debug=False):
         C = np.append(C, [A[2]], 0)
 
 
-    # Résolution du système 18 équations, 12 inconnus
+    # Resolution du systeme 18 equations, 12 inconnus
     u, s, vh = np.linalg.svd(C, full_matrices=True)
-    # La matrice de projection est la dernière colonne de la matrice vh  shape:(12,12)
+    # La matrice de projection est la derniere colonne de la matrice vh  shape:(12,12)
     Mp = vh[:,11]
     Mp = Mp.reshape((3, 4))
 
