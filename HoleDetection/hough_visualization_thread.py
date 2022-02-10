@@ -10,17 +10,14 @@ class HoughVisualizationThread(QThread):
     def __init__(self):
         super(HoughVisualizationThread,self).__init__()
         self._run_flag = True
-        self.original_image = cv2.imread("HoleDetection\ShittyDataset\image2.bmp")
-
-        self.p1 = 30
+        self.original_image = cv2.imread("./Data/Plaque1/Cognex_LED/image2.bmp")
+        self.p1 = 100
         self.p2 = 30
         self.blur = 5
-        self.dp = 1.5
-        self.minDist = 295 #270
-        self.minR = 10
-        self.maxR = 60
-        self.minV = 10
-        self.maxV = 60
+        self.dp = 1
+        self.minDist = 150 #270
+        self.minR = 0
+        self.maxR = 100
         self.brightness_value = 10
     
     def increase_brightness(self, img, value=10):
@@ -47,16 +44,17 @@ class HoughVisualizationThread(QThread):
 
     def hough(self):
         #increase brightness
-        img = self.increase_brightness(self.original_image.copy(), value=self.brightness_value)
+        img = self.original_image.copy()
+        #img = self.increase_brightness(self.original_image.copy(), value=self.brightness_value)
         imgGray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
         #adaptive threshold
         imgGray = cv2.medianBlur(imgGray, self.blur)
-        imgGray = cv2.adaptiveThreshold(imgGray,255,cv2.ADAPTIVE_THRESH_GAUSSIAN_C,cv2.THRESH_BINARY_INV,41,3) #41
-        imgGray = cv2.medianBlur(imgGray, self.blur)
-        imgGray[imgGray ==1] = 255
+        #imgGray = cv2.adaptiveThreshold(imgGray,255,cv2.ADAPTIVE_THRESH_GAUSSIAN_C,cv2.THRESH_BINARY_INV,41,3) #41
+        #imgGray = cv2.medianBlur(imgGray, self.blur)
+        #imgGray[imgGray ==1] = 255
         #kernel = np.ones((7,7),np.uint8)
-        kernel = cv2.getStructuringElement(shape=cv2.MORPH_ELLIPSE, ksize=(9,9))
-        imgGray = cv2.morphologyEx(imgGray, cv2.MORPH_OPEN, kernel)
+        #kernel = cv2.getStructuringElement(shape=cv2.MORPH_ELLIPSE, ksize=(9,9))
+        #imgGray = cv2.morphologyEx(imgGray, cv2.MORPH_OPEN, kernel)
 
         circles = cv2.HoughCircles(imgGray, cv2.HOUGH_GRADIENT, self.dp, self.minDist,
                                     param1=self.p1,param2=self.p2,minRadius=self.minR,maxRadius=self.maxR)
@@ -66,10 +64,9 @@ class HoughVisualizationThread(QThread):
         if( not (circles is None)):
             circles = np.uint16(np.around(circles))
             for i in circles[0,:]:
-                if i[2] >= self.minV and i[2] <= self.maxV:
-                    cv2.circle(img,(i[0],i[1]),i[2],(0,255,0),10)
-                    cv2.circle(img,(i[0],i[1]),2,(0,0,255),3)
-                    nb_c += 1
+                cv2.circle(img,(i[0],i[1]),i[2],(0,255,0),10)
+                cv2.circle(img,(i[0],i[1]),2,(0,0,255),3)
+                nb_c += 1
 
         return np.concatenate((img, cv2.cvtColor(imgCanny, cv2.COLOR_GRAY2BGR)), axis=1), circles[0,:]
 
@@ -79,6 +76,7 @@ class HoughVisualizationThread(QThread):
             image, points = self.hough()
             self.change_pixmap_signal.emit(image)
             self.change_points_signal.emit(points)
+            self.sleep(2)
 
     def stop(self):
         """Sets run flag to False and waits for thread to finish"""

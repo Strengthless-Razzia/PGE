@@ -45,10 +45,14 @@ def select_points(nb_points, img_path, points_file_path, edges_file_path, step_f
             Z = (Z1_Ro[ind] + Z2_Ro[ind]) / 2
 
             
-
-            if not (np.equal(np.array([X, Y, Z]), holes_point_3D).all(axis=1).any() and \
-                [X, Y, Z] not in picked_points_Ro):
+            Z = 1.84
+            if not(np.equal(np.array([X, Y]), holes_point_3D[:,:2]).all(axis=1).any() and \
+                    [X, Y, Z] not in picked_points_Ro):
                 return True
+
+            """if not (np.equal(np.array([X, Y, Z]), holes_point_3D).all(axis=1).any() and \
+                [X, Y, Z] not in picked_points_Ro):
+                return True"""
 
             picked_points_Ro.append([X, Y, Z])
 
@@ -119,16 +123,16 @@ def select_points(nb_points, img_path, points_file_path, edges_file_path, step_f
 
 
 if __name__ == '__main__':
-    picked_points_Ro, clicked_points = select_points(4, "./Data/Plaque1/Cognex/image6.bmp", 
+    picked_points_Ro, clicked_points = select_points(4, "./Data/Plaque1/PhotoUnity/plaque=1_position=(0.0, -2500.0, 0.0)_rotation=(270.0, 0.0, 0.0)_date=2022-01-19_11-31-26.png", 
                         "Data/Plaque1/Model/Plaque_1.xyz",
                         "Data/Plaque1/Model/Plaque_1.edges",
                         "Data/Plaque1/Model/Plaque_1.stp")
     
 
-    with open('HoleDetection/Points3D/picked_points_Ro_Cognex6.npy', 'wb') as f:
+    with open('HoleDetection/Points3D/picked_points_Ro_TestMatching.npy', 'wb') as f:
         np.save(f, picked_points_Ro, allow_pickle=False)
 
-    with open('HoleDetection/Points2D/clicked_points_Cognex6.npy', 'wb') as f:
+    with open('HoleDetection/Points2D/clicked_points_TestMatching.npy', 'wb') as f:
         np.save(f, clicked_points, allow_pickle=False)
 
         

@@ -71,8 +71,9 @@ def sortPoints(points, sortAxis = 0):
             if points[i,sortAxis] >= temp:
                 temp = points[i,sortAxis]
                 foundIndex=i
-        if foundIndex != -1:
-            sortedPoints=np.vstack((sortedPoints,points[foundIndex,:]))
+
+        sortedPoints=np.vstack((sortedPoints,points[foundIndex,:]))
+
         points = np.delete(points,foundIndex,axis=0)
     return sortedPoints
 

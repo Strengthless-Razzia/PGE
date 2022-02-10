@@ -85,8 +85,6 @@ def perspective_projection(intrinsic, P_c):
     Z = P_c[:,2]
     [u,v,tmp] = (1/Z) * np.dot(intrinsic, P_c.T)
 
-
-
     return u, v
 
 

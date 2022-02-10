@@ -25,12 +25,12 @@ class App(QWidget):
         self.textLabelTitle= QLabel('Hough Hole Detection')
         
         # create sliders
-        self.p1_slider = CustomSlider(30., 1.0, 100., "p1")
-        self.p2_slider = CustomSlider(30., 1.0, 100., "p2")
+        self.p1_slider = CustomSlider(100., 1.0, 200., "p1")
+        self.p2_slider = CustomSlider(30., 1.0, 200., "p2")
 
-        self.minR_slider = CustomSlider(10., 0., 100., "minR")
-        self.maxR_slider = CustomSlider(60., 0., 100., "maxR")
-        self.minDist_slider = CustomSlider(295., 0., 500., "minDist")
+        self.minR_slider = CustomSlider(0., 0., 100., "minR")
+        self.maxR_slider = CustomSlider(100., 0., 100., "maxR")
+        self.minDist_slider = CustomSlider(150., 0., 500., "minDist")
         self.brightness_value_slider = CustomSlider(10., 0., 100., "brightness")    
         
 
@@ -48,7 +48,7 @@ class App(QWidget):
         vbox_hough.addWidget(self.brightness_value_slider)
         
         
-        textLabelTitlePnP = QLabel('PnP solving')
+        textLabelTitlePnP = QLabel("PnP solving")
         self.solvePNPButton = QPushButton("SOLVE PNP", self)
         self.solvePNPButton.setFixedHeight(80)
         self.solvePNPButton.setStyleSheet("background-color: red; color: white")
@@ -59,6 +59,11 @@ class App(QWidget):
         draw_pnp_result_checkbox.setText("Draw Model on Image")
         clear_object_points_button  = QPushButton("Clear 3D points", self)
         self.pnp_widget = PNPResultVisualizationWidget()
+        self.error_label = QLabel("-1")
+        font_error = QFont('Times', 20)
+        font_error.setBold(True)
+        self.error_label.setFont(font_error)
+        
 
         vbox_pnp = QVBoxLayout()
         vbox_pnp.addWidget(textLabelTitlePnP)
@@ -66,6 +71,8 @@ class App(QWidget):
         vbox_pnp.addWidget(draw_pnp_result_checkbox)
         vbox_pnp.addWidget(clear_object_points_button)
         vbox_pnp.addWidget(self.pnp_widget)
+        vbox_pnp.addWidget(QLabel("Error"))
+        vbox_pnp.addWidget(self.error_label)
 
 
         mainbox = QHBoxLayout()
@@ -81,6 +88,7 @@ class App(QWidget):
         self.threadHough.change_points_signal.connect(self.threadPNP.update_image_points)
         self.threadPNP.update_plot_signal.connect(self.pnp_widget.update_canvas)
         self.threadPNP.nb_picked_points_signal.connect(self.update_button)
+        self.threadPNP.update_error_signal.connect(self.update_error)
 
         self.solvePNPButton.clicked.connect(self.threadPNP.process_pnp)
         draw_pnp_result_checkbox.stateChanged.connect(self.threadPNP.update_draw_model_pnp_result)
@@ -120,7 +128,10 @@ class App(QWidget):
     
     def update_button(self, nb_points):
         self.solvePNPButton.setText("SOLVE P-{:d}-P".format((nb_points)))
-        self.solvePNPButton.setEnabled(nb_points > 4)
+        self.solvePNPButton.setEnabled(nb_points >= 4)
+    
+    def update_error(self, error):
+        self.error_label.setText("{:.2f}".format(error))
 
     
 if __name__=="__main__":
