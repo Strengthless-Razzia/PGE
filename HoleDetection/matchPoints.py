@@ -61,20 +61,6 @@ def generateNewGrid(deletion = False, amountToDelete = 5):
     return newPoints
 
 def sortPoints(points, sortAxis = 0):
-    sortedPoints = np.zeros([0,2])
-    while len(points) > 0:
-        foundIndex = -1
-        temp=-1000
-        for i in range(len(points)):
-            if points[i,sortAxis] >= temp:
-                temp = points[i,sortAxis]
-                foundIndex=i
-        if foundIndex != -1:
-            sortedPoints=np.vstack((sortedPoints,points[foundIndex,:]))
-        points = np.delete(points,foundIndex,axis=0)
-    return sortedPoints
-
-def sortPoints(points, sortAxis = 0):
     sortedPoints = np.zeros([0,len(points[0,:])])
     while len(points) > 0:
         foundIndex = -1
@@ -87,6 +73,27 @@ def sortPoints(points, sortAxis = 0):
             sortedPoints=np.vstack((sortedPoints,points[foundIndex,:]))
         points = np.delete(points,foundIndex,axis=0)
     return sortedPoints
+    
+def hough(imgPath):
+    p1 = 100
+    p2 = 20
+    blur = 5
+    dp = 1
+    minDist = 150
+    
+    img = cv.imread(imgPath, cv.IMREAD_GRAYSCALE)
+    imgGray = cv.cvtColor(img, cv.COLOR_GRAY2BGR)
+    imgGray = cv.cvtColor(imgGray, cv.COLOR_BGR2GRAY)
+
+    imgGray = cv.medianBlur(imgGray, blur)
+
+    circles = cv.HoughCircles(imgGray, cv.HOUGH_GRADIENT, dp, minDist,
+                                param1=p1,param2=p2,minRadius=0,maxRadius=100)
+
+    if( not (circles is None)):
+        circles = np.uint16(np.around(circles))
+
+    return circles[0,:,:2]
 
 def findMarkPosition(imgPath, debug = False):
     im = cv.imread(imgPath, cv.IMREAD_GRAYSCALE)
@@ -133,7 +140,7 @@ def findMarkPosition(imgPath, debug = False):
     if len(keypoints) != 0: 
         x = keypoints[0].pt[0]-bordersize
         y = keypoints[0].pt[1]-bordersize
-        return (x,y)
+        return [x,y]
     else:
         return (0,0)
 
@@ -226,29 +233,29 @@ def getSearchZone(line, slopePerp):
     
     return np.sort([line1_B, line2_B])
 
-def isMarkCloseby(line, markX,markY):
+def isMarkCloseby(line, mark):
     
     slope, posAtOrigin = getLineEquation(line)
     slopePerp = getPerpendicularSlope(slope)
     if slopePerp == -1:
-        if markY <= max((line[1],line[3])) and markY >= min((line[1],line[3])):
+        if mark[1] <= max((line[1],line[3])) and mark[1] >= min((line[1],line[3])):
             return True
         else:
             return False
 
     l_low,l_high = getSearchZone(line,slopePerp)
 
-    if markY <= markX*slopePerp + l_high and markY >= markX*slopePerp + l_low:
+    if mark[1] <= mark[0]*slopePerp + l_high and mark[1] >= mark[0]*slopePerp + l_low:
         return True
     else:
         return False
 
-def getLineDistanceToMark(line, markX,markY):
+def getLineDistanceToMark(line,mark):
 
     a,b=getLineEquation(line)
     if a == -1:
-        return abs(markX-line[0])
-    return abs(markY - a*markX - b)/np.sqrt(1+a**2)
+        return abs(mark[0]-line[0])
+    return abs(mark[1] - a*mark[0] - b)/np.sqrt(1+a**2)
 
 def displayUniqueLine(imgPath,foundLine,title):
     src = cv.imread(imgPath, cv.IMREAD_GRAYSCALE)
@@ -259,12 +266,12 @@ def displayUniqueLine(imgPath,foundLine,title):
     cv.imshow(title,src)
     cv.waitKey()
 
-def detectClosestEdge(imgPath, markX,markY):
+def detectClosestEdge(imgPath, mark):
     lines = getHoughLines(imgPath)
     #displayImgWithLines(imgPath,lines,"Before Traitement")
     i = 0
     while i < len(lines):
-        if not isMarkCloseby(lines[i], markX,markY):
+        if not isMarkCloseby(lines[i], mark):
             lines = np.delete(lines,i,axis=0)
         else:
             i+=1
@@ -274,7 +281,7 @@ def detectClosestEdge(imgPath, markX,markY):
     foundLine = None
 
     for currentLine in lines:
-        currentDistance = getLineDistanceToMark(currentLine, markX,markY)
+        currentDistance = getLineDistanceToMark(currentLine, mark)
 
 
         if currentDistance<foundLineDistance:
@@ -318,18 +325,38 @@ def getLinesToFind(plaqueModelPath):
     outValues = np.array(finishedLists)
     print "Shape of the list : ",outValues.shape
     return outValues
+    
+def displayPointCloudOnImg(imgPath, cloud):
+    plt.imshow(cv.imread(imgPath))
+    plt.scatter(cloud[:,0], cloud[:,1], c='b', marker='x', label='1')
+    plt.show()
 
-    
+def addMarkAndLineToCloud(cloud, mark, line): #useful to rotate stuff around
+    newStuff = np.vstack([cloud.copy(), mark])
+    newStuff = np.vstack([newStuff, [line[0],line[1]]])
+    newStuff = np.vstack([newStuff, [line[2],line[3]]])
+    return newStuff
+
+def separatePointsAndOthers(cloud): #When it's rotated, we take them out for easy parsing
     
 
-    
+    return newCloud, mark
 
 def generatePointLines(imgPath,detectedPoints,plaqueModelPath):
-    markX, markY = findMarkPosition(imgPath)
-    foundLine = detectClosestEdge(imgPath,markX, markY)
+    mark = findMarkPosition(imgPath)
+    foundLine = detectClosestEdge(imgPath,mark)
     getLinesToFind(plaqueModelPath)
+    points = hough(imgPath)
+    workingPointSet = points.copy()
+    
+    workingPointSet = np.vstack([workingPointSet, mark])
+    workingPointSet = np.vstack([workingPointSet, [foundLine[0],foundLine[1]]])
+    workingPointSet = np.vstack([workingPointSet, [foundLine[2],foundLine[3]]])
 
-
+    displayPointCloudOnImg(imgPath, points)
+    rotated = rotate2dPoints(workingPointSet, 10)
+    displayPointCloudOnImg(imgPath, rotated)
+    
     #Labelliser les points
     #Remet l'image droite sans perdre les labels (?)
     #Reorganiser les points de haut en bas
@@ -347,3 +374,4 @@ generatePointLines("HoleDetection\ShittyDataset\image2.bmp",  None, "Data\Plaque
 #for i in range(1,5):
 #    markX, markY = findMarkPosition("HoleDetection\ShittyDataset\image%u.bmp"%i)
 #    detectClosestEdge("HoleDetection\ShittyDataset\image%u.bmp"%i,markX, markY)
+    
