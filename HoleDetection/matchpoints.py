@@ -1,6 +1,7 @@
 # needed libraries
 from linecache import getline
 from random import random
+from turtle import shape
 import cv2 as cv
 from cv2 import SORT_DESCENDING
 import numpy as np
@@ -8,6 +9,13 @@ import math
 import matplotlib.pyplot as plt
 import extractHoles
 
+ 
+def rotxy(point, centre_rotation, alpha):
+    dx = point[0] - centre_rotation[0]
+    dy = point[1] - centre_rotation[1]
+    c = math.cos(alpha)
+    s = math.sin(alpha)
+    return ((dx * c - dy * s) + centre_rotation[0], (dy * c + dx * s) + centre_rotation[1])
 
 def rotate2dPoints(points, alpha):
     alpha = -alpha*math.pi/180
@@ -28,7 +36,7 @@ def rotate2dPoints(points, alpha):
     for i in range(len(points)):
         X_apu.append(math.cos(alpha)*X_new[i]-math.sin(alpha)*Y_new[i])
         Y_apu.append(math.sin(alpha)*X_new[i]+math.cos(alpha)*Y_new[i])
-            
+    
     # adding mean back to rotated coordinates
     X_new = X_apu + X_mean
     Y_new = Y_apu + Y_mean
@@ -111,9 +119,9 @@ def findMarkPosition(imgPath, debug = True):
     if debug:
         # Show keypoints
         im_with_keypoints = cv.drawKeypoints(im, keypoints, np.array([]), (0,0,255), cv.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS)
-        im_with_keypoints = cv.resize(im_with_keypoints,(1000,1000))
-      #  cv.imshow("Keypoints", im_with_keypoints)
-     #   cv.waitKey(0)
+        im_with_keypoints = cv.resize(im_with_keypoints,(800,800))
+        cv.imshow("Keypoints", im_with_keypoints)
+        cv.waitKey(0)
     if len(keypoints) != 0: 
         x = keypoints[0].pt[0]-bordersize
         y = keypoints[0].pt[1]-bordersize
