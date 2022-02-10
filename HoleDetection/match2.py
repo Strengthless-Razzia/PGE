@@ -129,7 +129,7 @@ def hough(imgPath):
 
 
 if __name__ == '__main__':
-    imgPath = "Data\Plate\image2.bmp"
+    imgPath = "Data/Plate/image2.bmp"
     #position du bloc
     markX, markY = np.around(matchpoints.findMarkPosition(imgPath, debug=False))
     #position des deux points formant la ligne de la plaque la plus proche
