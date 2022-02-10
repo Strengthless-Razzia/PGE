@@ -11,15 +11,22 @@ def isRotationMatrix(R,rtol=1.e-06):
     assert(isclose(np.linalg.det(R),1,rtol=rtol)),"Rotation matrix must have it's determinant equal to 1"
     assert np.isclose(np.linalg.inv(R),R.T,rtol).all(),"Rotation matrix must be orthogonal"   
     
-def construct_matrix_from_vec(vec_solution):
-    assert(vec_solution.shape==(6L,1L))
+def R_from_vect(vec):
+    """
+    Cree matrice coordonnees homogenes
+    input : vec (tx,ty,tz,rx,ry,rz)
+    rx,ry,rz : vecteur autour duquel a tourne le repere (et angle = norme vecteur)
+    output : matrice R3*3|T3*1
+                     01*3|1
+    """
+    assert(vec.shape==(6L,1L))
     
-    v1 = vec_solution[0]
-    v2 = vec_solution[1]
-    v3 = vec_solution[2]
-    x = vec_solution[3]
-    y = vec_solution[4]
-    z = vec_solution[5]
+    v1 = vec[0]
+    v2 = vec[1]
+    v3 = vec[2]
+    x = vec[3]
+    y = vec[4]
+    z = vec[5]
 
     matPos = np.eye(4)
 
@@ -31,9 +38,9 @@ def construct_matrix_from_vec(vec_solution):
     isRotationMatrix(matPos[0:3,0:3])
     return matPos
     
-def angle_to_R(angle):
+def bryant_to_R(angle):
     """
-    in : tuple of bryan angles
+    in : tuple of bryant angles (lambda,mu,nu) : (rot x,rot nouveau y,rot nouveau z)
     output : rotation matrix
     """
     assert(type(angle)==type(())),"type tuple expected"
@@ -62,18 +69,21 @@ def angle_to_R(angle):
     
     
 def R_to_bryant(R):
-    #transformation matrice rotation vers angles bryant
-    #bryant :
-    # 1 : lambda = rotation autour de x d'un angle lambda
-    # 2 : mu = rotation autour du nouveau y d'un angle mu
-    # 3 : nu = rotation autour du nouveau z d'un angle nu
-    # -pi<lambda<=pi
-    # -pi/2<=mu<=pi/2
-    # -pi<nu<=pi
-    
+    """
+    transformation matrice rotation vers angles bryant
+    input : np array 3*3
+    output : tuple (lambda,mu,nu)
+    bryant :
+    1 : lambda = rotation autour de x d'un angle lambda
+    2 : mu = rotation autour du nouveau y d'un angle mu
+    3 : nu = rotation autour du nouveau z d'un angle nu
+    -pi<lambda<=pi
+    -pi/2<=mu<=pi/2
+    -pi<nu<=pi
+    """ 
     isRotationMatrix(R)
     
-    #A FIXER (valeurs numeriquement superieures a 1 parfois, arcsin plante...)
+    #A FIXER (valeurs numeriquement superieures a 1 ou inferieures a -1 parfois, arcsin plante...)
     for i in range(3):
         for j in range(3):
             if(R[i:i+1,j:j+1] >1):
@@ -82,17 +92,17 @@ def R_to_bryant(R):
                 R[i:i+1,j:j+1] = -1.
 
     isRotationMatrix(R)
+    #hakim
     if (R[0:1,2:3]==1) or (R[0:1,2:3]==-1):
-        mu = float(np.pi*R[0:1,2:3]/2)
-        nu = float(np.arctan2(R[1:2,0:1],R[1:2,1:2]))
-        lamb = 0
-        print("lambda and nu undefined !")
+        print("warning : R13 = +/-1, nu set to 0")
+        lamb = float(np.arctan2(R[1:2,0:1],R[1:2,1:2])/(R[0:1,2:3]))
+        mu = float(np.arcsin(R[0:1,2:3]))
+        nu = 0.
     else:
-        lamb = float(np.arctan2(-R[1:2,2:3],R[2:3,2:3])**2)
-        mu = float(np.arcsin(R[0:1,2:3]))**3
-        nu = float(np.arctan2(-R[0:1,1:2],R[0:1,0:1]))
+        lamb = float(-np.arctan2(R[1:2,2:3],R[2:3,2:3]))
+        mu = float(np.arcsin(R[0:1,2:3]))
+        nu = float(-np.arctan2(R[0:1,1:2],R[0:1,0:1]))
     return(lamb,mu,nu)
-   
 
 def transform_and_draw_model(edges_Ro, intrinsic, extrinsic, fig_axis):
     # ********************************************************************* #

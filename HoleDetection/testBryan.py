@@ -2,9 +2,20 @@ from matUtils import *
 import numpy as np
 import cv2
 
-#vec = np.pi*2*np.array([[1.],[1.],[1.]])/(3*np.sqrt(3))
-vec = np.array([[np.pi/2],[np.pi/2],[np.pi/2]])
-print(vec)
-print(cv2.Rodrigues(vec)[0])
-print(R_to_bryant(cv2.Rodrigues(vec)[0]))
-print(angle_to_R((np.pi/2,np.pi/2,0)))
+i = 0
+j = 0
+ok = True
+while ok:
+    v = np.random.normal(scale=1000.,size=(3,1))
+    R = cv2.Rodrigues(v)[0]
+    i = i+1
+    if i == 10000:
+        j=j+1
+        print(j)
+        i=0
+    if(np.isclose(bryant_to_R(R_to_bryant(R)),R).all()==True):
+        pass
+    else:
+        ok = False
+        print(R)
+        print(R_to_bryant(R))

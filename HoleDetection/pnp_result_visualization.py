@@ -7,10 +7,9 @@ from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 import matplotlib.image as mpimg
 from mpl_toolkits.mplot3d import Axes3D
 from matUtils import *
-from Paths import model as modelPath
 import cv2
-
-from imagePath import image as imagePath
+from Paths import model as modelPath
+from Paths import image as imagePath
 
 class PNPResultVisualizationWidget(QWidget):
     """
@@ -183,9 +182,9 @@ class PNPResultVisualizationThread(QThread):
             self.distortion_coefs,
             flags=0)
         
-        self.extrinsic_mat = construct_matrix_from_vec(np.concatenate([rotation_vector, translation_vector]))
-        print("Extrinseque Opencv :\n{}".format(self.extrinsic_mat))
-        print("Tait-Bryan angles : {}".format(R_to_bryant(self.extrinsic_mat[0:3,0:3])))
+        self.extrinsic_mat = R_from_vect(np.concatenate([rotation_vector, translation_vector]))
+        print("Matrice extrinseque :\n{}".format(self.extrinsic_mat))
+        print("Angles de Bryant :\n{}".format(R_to_bryant(self.extrinsic_mat[0:3,0:3])))
         return success
 
     def update_draw_model_pnp_result(self, state):
