@@ -4,6 +4,8 @@ from random import random
 import cv2 as cv
 from cv2 import SORT_DESCENDING
 from cv2 import sort
+from cv2 import rotate
+from matplotlib import lines
 import numpy as np
 import math 
 import matplotlib.pyplot as plt
@@ -73,7 +75,60 @@ def sortPoints(points, sortAxis = 0):
             sortedPoints=np.vstack((sortedPoints,points[foundIndex,:]))
         points = np.delete(points,foundIndex,axis=0)
     return sortedPoints
-    
+
+def invSortPoints(points, sortAxis = 0):
+    sortedPoints = np.zeros([0,len(points[0,:])])
+    while len(points) > 0:
+        foundIndex = -1
+        temp=+100000000
+        for i in range(len(points)):
+            if points[i,sortAxis] <= temp:
+                temp = points[i,sortAxis]
+                foundIndex=i
+        if foundIndex != -1:
+            
+            sortedPoints=np.vstack((sortedPoints,points[foundIndex,:]))
+        points = np.delete(points,foundIndex,axis=0)
+    return sortedPoints
+
+def invSortPointsKeepOG(points, originals,sortAxis = 0):
+    sortedPoints = np.zeros([0,len(points[0,:])])
+    sortedOGPoints = np.zeros([0,len(points[0,:])])
+    tempOriginals = originals.copy()
+    while len(points) > 0:
+        foundIndex = -1
+        temp=+100000000
+        for i in range(len(points)):
+            if points[i,sortAxis] <= temp:
+                temp = points[i,sortAxis]
+                foundIndex=i
+        if foundIndex != -1:
+            
+            sortedPoints=np.vstack((sortedPoints,points[foundIndex,:]))
+            sortedOGPoints=np.vstack((sortedOGPoints,tempOriginals[foundIndex,:]))
+        points = np.delete(points,foundIndex,axis=0)
+        tempOriginals= np.delete(tempOriginals,foundIndex,axis=0)
+    return sortedPoints, sortedOGPoints
+
+def sortPointsKeepOG(points, originals,sortAxis = 0):
+    sortedPoints = np.zeros([0,len(points[0,:])])
+    sortedOGPoints = np.zeros([0,len(points[0,:])])
+    tempOriginals = originals.copy()
+    while len(points) > 0:
+        foundIndex = -1
+        temp=-100000000
+        for i in range(len(points)):
+            if points[i,sortAxis] >= temp:
+                temp = points[i,sortAxis]
+                foundIndex=i
+        if foundIndex != -1:
+            
+            sortedPoints=np.vstack((sortedPoints,points[foundIndex,:]))
+            sortedOGPoints=np.vstack((sortedOGPoints,tempOriginals[foundIndex,:]))
+        points = np.delete(points,foundIndex,axis=0)
+        tempOriginals= np.delete(tempOriginals,foundIndex,axis=0)
+    return sortedPoints, sortedOGPoints
+
 def hough(imgPath):
     p1 = 100
     p2 = 20
@@ -315,21 +370,55 @@ def getLinesToFind(plaqueModelPath):
             newList=np.vstack([newList,point])
             continue
         else:
-            sortNewList = sortPoints(newList, 0) 
+            sortNewList = invSortPoints(newList, 0) 
             finishedLists.append(sortNewList)
             newList = np.empty([0,3])
             newList=np.vstack((newList,point))
             continue
-    finishedLists.append(sortPoints(newList, sortAxis=0))
+    finishedLists.append(invSortPoints(newList, sortAxis=0))
 
     outValues = np.array(finishedLists)
-    print "Shape of the list : ",outValues.shape
     return outValues
-    
+
+def getLinesFromCloud(cloud, original):
+    [cloud, original] = invSortPointsKeepOG(cloud, original, 1)
+
+    newList = np.empty((0,2))
+    ogList =np.empty((0,2))
+    finishedLists=[]
+
+    for i in range(len(cloud)):
+        if len(newList) == 0:
+            newList=np.vstack([newList,cloud[i,:]])
+            ogList =np.vstack([ogList,original[i,:]])
+            continue
+
+        if(abs(newList[-1,1] - cloud[i,1]) <= 20):
+            newList=np.vstack([newList,cloud[i,:]])
+            ogList =np.vstack([ogList,original[i,:]])
+            continue
+        else:
+            [_,newOgList] = invSortPointsKeepOG(newList, ogList, 0) 
+            finishedLists.append(newOgList)
+            newList = np.empty([0,2])
+            ogList = np.empty([0,2])
+            newList=np.vstack((newList,cloud[i,:]))
+            ogList=np.vstack((ogList,original[i,:]))
+            continue
+
+    [newList,ogList]  = invSortPointsKeepOG(newList, ogList, 0)
+    finishedLists.append(ogList)
+
+    outValues = np.array(finishedLists)
+    print outValues.shape
+    return outValues
+
+ 
 def displayPointCloudOnImg(imgPath, cloud):
     plt.imshow(cv.imread(imgPath))
     plt.scatter(cloud[:,0], cloud[:,1], c='b', marker='x', label='1')
-    plt.show()
+    plt.show(block=False)
+    plt.waitforbuttonpress()
 
 def addMarkAndLineToCloud(cloud, mark, line): #useful to rotate stuff around
     newStuff = np.vstack([cloud.copy(), mark])
@@ -338,36 +427,61 @@ def addMarkAndLineToCloud(cloud, mark, line): #useful to rotate stuff around
     return newStuff
 
 def separatePointsAndOthers(cloud): #When it's rotated, we take them out for easy parsing
-    
-
-    return newCloud, mark
+    newCloud = cloud.copy()
+    point1 = newCloud[-1,:]
+    newCloud = np.delete(newCloud,-1,axis=0)
+    point2 = newCloud[-1,:]
+    newCloud = np.delete(newCloud,-1,axis=0)
+    mark = newCloud[-1,:]
+    newCloud = np.delete(newCloud,-1,axis=0)
+    return newCloud, mark,[point1[0],point1[1],point2[0],point2[1] ]
 
 def generatePointLines(imgPath,detectedPoints,plaqueModelPath):
+    #Trouver les lignes dans le modele 3d
+    linesFrom3D = getLinesToFind(plaqueModelPath)
+    #Chopper les trous 2D
     mark = findMarkPosition(imgPath)
     foundLine = detectClosestEdge(imgPath,mark)
-    getLinesToFind(plaqueModelPath)
-    points = hough(imgPath)
-    workingPointSet = points.copy()
-    
-    workingPointSet = np.vstack([workingPointSet, mark])
-    workingPointSet = np.vstack([workingPointSet, [foundLine[0],foundLine[1]]])
-    workingPointSet = np.vstack([workingPointSet, [foundLine[2],foundLine[3]]])
+    originalPoints = hough(imgPath)
 
-    displayPointCloudOnImg(imgPath, points)
-    rotated = rotate2dPoints(workingPointSet, 10)
-    displayPointCloudOnImg(imgPath, rotated)
+    #On garde les originaux dans le coin pour la fin
+    workingPointSet = originalPoints.copy()
     
-    #Labelliser les points
-    #Remet l'image droite sans perdre les labels (?)
-    #Reorganiser les points de haut en bas
-    #quand ecart trop grand, considere que nouvelle ligne
-    #reorganiser les lignes en X
-    #inshallah on a pas perdu les labels, et on renvoie les listes de points originaux mais dans le bon ordre cette fois
-    
-    pass
+    #On peut commencer a mettre les trucs droits, d'abord on s'arrange pour avoir la ligne directrice a l'horizontale
+    stop = False
+    while not stop:
+        [slope,b] = getLineEquation(foundLine)
+        if slope == -1:
+            #Si la ligne est parfaitement verticale, rotate 90] and stop
+            workingPointSet = addMarkAndLineToCloud(workingPointSet, mark, foundLine)
+            workingPointSet = rotate2dPoints(workingPointSet, 90)
+            [workingPointSet,mark, foundLine] = separatePointsAndOthers(workingPointSet)
+            stop = True
+        elif abs(slope)>=0.0000005:
+            workingPointSet = addMarkAndLineToCloud(workingPointSet, mark, foundLine)
+            workingPointSet = rotate2dPoints(workingPointSet, slope)
+            [workingPointSet,mark, foundLine] = separatePointsAndOthers(workingPointSet)
+        else:
+            stop = True
+
+    #A partir d'ici le truc est droit, c'est chouette mais il faut checker si la marque est au dessus ou en dessous, on veut la marque au dessus, donc potentiel 180 degre
+    if mark[1] >= max([foundLine[1],foundLine[3]]):
+        workingPointSet = addMarkAndLineToCloud(workingPointSet, mark, foundLine)
+        workingPointSet = rotate2dPoints(workingPointSet, 180)
+        [workingPointSet,mark, foundLine] = separatePointsAndOthers(workingPointSet)
+
+    newStuff=getLinesFromCloud(workingPointSet,originalPoints)
+    for i in range(len(newStuff)):
+        print(linesFrom3D[i][0:2])
+        displayPointCloudOnImg(imgPath, newStuff[i][0:2])
+        
+    return linesFrom3D,newStuff
 
 
-generatePointLines("HoleDetection\ShittyDataset\image2.bmp",  None, "Data\Plaque1\Model\Plaque_1.stp")
+lines3D, lines2D = generatePointLines("HoleDetection\ShittyDataset\image3.bmp",  None, "Data\Plaque1\Model\Plaque_1.stp")
+for i in range(len(lines2D)):
+    displayPointCloudOnImg("HoleDetection\ShittyDataset\image3.bmp",lines2D[i])
+    displayPointCloudOnImg("HoleDetection\ShittyDataset\image3.bmp",lines3D[i])
 #with open('HoleDetection\Points3D\Plaque1.npy', 'rb') as f:
 #    picked_points_Ro = np.load(f, allow_pickle=False)
 
