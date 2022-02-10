@@ -482,10 +482,17 @@ lines3D, lines2D = generatePointLines("HoleDetection\ShittyDataset\image3.bmp", 
 for i in range(len(lines2D)):
     displayPointCloudOnImg("HoleDetection\ShittyDataset\image3.bmp",lines2D[i])
     displayPointCloudOnImg("HoleDetection\ShittyDataset\image3.bmp",lines3D[i])
-#with open('HoleDetection\Points3D\Plaque1.npy', 'rb') as f:
-#    picked_points_Ro = np.load(f, allow_pickle=False)
 
-#for i in range(1,5):
-#    markX, markY = findMarkPosition("HoleDetection\ShittyDataset\image%u.bmp"%i)
-#    detectClosestEdge("HoleDetection\ShittyDataset\image%u.bmp"%i,markX, markY)
-    
+#CRUDE MATCHING, on prends vraiment juste les lignes qui sont exactements similaires
+"""
+i = 0
+while i < (len(lines2D)):
+    if len(lines2D[i]) != len(lines3D[i]):
+        lines2D = np.delete(lines2D, i, axis=0)
+        lines3D = np.delete(lines3D, i, axis=0)
+    else:
+        i+=1
+
+#displayPointCloudOnImg("HoleDetection\ShittyDataset\image3.bmp",lines2D[i])
+#displayPointCloudOnImg("HoleDetection\ShittyDataset\image3.bmp",lines3D[i])
+"""
