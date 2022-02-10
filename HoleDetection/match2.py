@@ -25,6 +25,7 @@ def reOrient(liste_points, coord_bloc, coord_ligne):
         delta = abs(newLine[0, 1]- newLine[1, 1])
         if(delta>0):
         #tourner l'image dans un sens
+
             newPoints = np.uint16(np.around(matchpoints.rotate2dPoints(newPoints, alpha)))
             newLine = np.uint16(np.around(matchpoints.rotate2dPoints(newLine, alpha)))
             wasPos = True
@@ -42,6 +43,7 @@ def reOrient(liste_points, coord_bloc, coord_ligne):
         ####AFFICHAGE DES POINTS
         plt.scatter(newPoints[:, 0], newPoints[:, 1], color='red', marker='x')
         plt.scatter(newLine[:, 0], newLine[:, 1], color='blue', marker='x')
+        plt.scatter(coord_bloc[0], coord_bloc[1], color='green', marker='o')
         plt.show()
         # si on a deja ete trop dans un sens et qu'on est dans l'autre, on reduit le alpha. 
 
@@ -92,7 +94,7 @@ def hough(imgPath):
 
 
 if __name__ == '__main__':
-    imgPath = "Data\Plate\image2.bmp"
+    imgPath = "Data/Plate/image2.bmp"
     #position du bloc
     markX, markY = matchpoints.findMarkPosition(imgPath)
     #position des deux points formant la ligne de la plaque la plus proche

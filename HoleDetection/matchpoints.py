@@ -10,9 +10,10 @@ import extractHoles
 
 
 def rotate2dPoints(points, alpha):
-    alpha = -alpha*math.pi/180
+    alpha = -alpha * math.pi/180
     # calculating "center of gravity" = rotation point 
-    mean = np.mean(points,axis=0)
+    mean = np.mean(points, axis=0)
+    print(mean)
     X_mean = mean[0]
     Y_mean = mean[1]
     # subtracting mean from original coordinates and saving result to X_new and Y_new 
@@ -21,6 +22,7 @@ def rotate2dPoints(points, alpha):
     for i in range(len(points)):
         X_new.append(points[i,0] - X_mean)
         Y_new.append(points[i,1] - Y_mean)
+
     # rotating coordinates from which mean has been subtracted
     X_apu = []   #temporary help variable
     Y_apu = []   #temporary help variable
@@ -28,12 +30,13 @@ def rotate2dPoints(points, alpha):
     for i in range(len(points)):
         X_apu.append(math.cos(alpha)*X_new[i]-math.sin(alpha)*Y_new[i])
         Y_apu.append(math.sin(alpha)*X_new[i]+math.cos(alpha)*Y_new[i])
-            
+
+
     # adding mean back to rotated coordinates
     X_new = X_apu + X_mean
     Y_new = Y_apu + Y_mean
 
-    newPoints = np.zeros([len(X_new),2])
+    newPoints = np.zeros([len(X_new), 2])
     newPoints[:,0] = X_new
     newPoints[:,1] = Y_new
     return newPoints
@@ -72,8 +75,8 @@ def sortPoints(points, sortAxis = 0):
         points = np.delete(points,foundIndex,axis=0)
     return sortedPoints
 
-def findMarkPosition(imgPath, debug = True):
-    im = cv.imread(imgPath, cv.IMREAD_GRAYSCALE)
+def findMarkPosition(im, debug = True):
+    #m = cv.imread(imgPath, cv.IMREAD_GRAYSCALE)
     bordersize = 10
     im = cv.copyMakeBorder(
         im,
@@ -132,7 +135,7 @@ def getHoughLines(img):
     """
     
     # Loads an image
-    src = cv.imread(img, cv.IMREAD_GRAYSCALE)
+    src = img
     # Check if image is loaded fine
     if src is None:
         print ('Error opening image!')
@@ -243,8 +246,8 @@ def displayUniqueLine(imgPath,foundLine,title):
     cv.imshow(title,src)
     cv.waitKey()
 
-def detectClosestEdge(imgPath, markX,markY):
-    lines = getHoughLines(imgPath)
+def detectClosestEdge(im, markX,markY):
+    lines = getHoughLines(im)
  #   displayImgWithLines(imgPath,lines,"Before Traitement")
     i = 0
     while i < len(lines):
