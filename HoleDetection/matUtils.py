@@ -1,3 +1,7 @@
+#!/usr/bin/python2.6
+ 
+# -*-coding:Latin-1 -*
+
 import numpy as np
 
 def construct_matrix_from_vec(vec_solution):
@@ -66,19 +70,6 @@ def transform_and_draw_model(edges_Ro, intrinsic, extrinsic, fig_axis):
 
 
 def perspective_projection(intrinsic, P_c):
-    # ***************************************************** #
-    # A COMPLETER.                                          #
-    # Fonction utile disponible :                           #
-    #   np.dot                                              #
-    # Input:                                                #
-    #   intrinsic : ndarray[3x3] - parametres intrinseques  #
-    #   P_c : ndarray[Nx3],                                 #
-    #         N = nombre de points à transformer            #
-    #         3 = (X, Y, Z) les coordonnees des points      #
-    # Output:                                               #
-    #   u, v : deux ndarray[N] contenant les                #
-    #          coordonnees Ri des points P_c transformes    #
-    # ***************************************************** #
     
     Z = P_c[:,2]
     [u,v,tmp] = (1/Z) * np.dot(intrinsic, P_c.T)
