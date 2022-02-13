@@ -411,7 +411,7 @@ def getLinesFromCloud(cloud, original):
     finishedLists.append(ogList)
 
     outValues = np.array(finishedLists)
-    print outValues.shape
+    
     return outValues
 
  
@@ -472,28 +472,37 @@ def generatePointLines(imgPath,detectedPoints,plaqueModelPath):
         [workingPointSet,mark, foundLine] = separatePointsAndOthers(workingPointSet)
 
     newStuff=getLinesFromCloud(workingPointSet,originalPoints)
-    for i in range(len(newStuff)):
-        print(linesFrom3D[i][0:2])
-        displayPointCloudOnImg(imgPath, newStuff[i][0:2])
         
     return linesFrom3D,newStuff
 
+def removeNonSimilarLines(lines2D, lines3D):
+    i = 0
+    while i < (len(lines2D)):
+        if len(lines2D[i]) != len(lines3D[i]):
+            lines2D = np.delete(lines2D, i, axis=0)
+            lines3D = np.delete(lines3D, i, axis=0)
+        else:
+            i+=1
 
-lines3D, lines2D = generatePointLines("HoleDetection\ShittyDataset\image3.bmp",  None, "Data\Plaque1\Model\Plaque_1.stp")
-for i in range(len(lines2D)):
-    displayPointCloudOnImg("HoleDetection\ShittyDataset\image3.bmp",lines2D[i])
-    displayPointCloudOnImg("HoleDetection\ShittyDataset\image3.bmp",lines3D[i])
+    return lines2D,lines3D
 
-#CRUDE MATCHING, on prends vraiment juste les lignes qui sont exactements similaires
-"""
-i = 0
-while i < (len(lines2D)):
-    if len(lines2D[i]) != len(lines3D[i]):
-        lines2D = np.delete(lines2D, i, axis=0)
-        lines3D = np.delete(lines3D, i, axis=0)
-    else:
-        i+=1
+def formatPointsForPnP(lines2D,lines3D):
+    new2D = np.empty((0,2))
+    new3D = np.empty((0,3))
+    for i in range(len(lines2D)):
+        new2D = np.vstack([new2D,lines2D[i]])
+        new3D = np.vstack([new3D,lines3D[i]])
+    return new2D,new3D
 
-#displayPointCloudOnImg("HoleDetection\ShittyDataset\image3.bmp",lines2D[i])
-#displayPointCloudOnImg("HoleDetection\ShittyDataset\image3.bmp",lines3D[i])
-"""
+if __name__=="__main__":
+    lines3D, lines2D = generatePointLines("HoleDetection\ShittyDataset\\1.bmp",  None, "Data\Plaque1\Model\Plaque_1.stp")
+
+    """Uncomment pour afficher les lignes 1 par 1 pour debug"""
+    #for i in range(len(lines2D)):
+    #    displayPointCloudOnImg("HoleDetection\ShittyDataset\\1.bmp",lines2D[i])
+    #    displayPointCloudOnImg("HoleDetection\ShittyDataset\\1.bmp",lines3D[i])
+
+    #CRUDE MATCHING, on prends vraiment juste les lignes qui font la meme taille
+    lines2D,lines3D=removeNonSimilarLines(lines2D,lines3D)
+    readyForPnP_2D,readyForPnP_3D = formatPointsForPnP(lines2D,lines3D)
+    
