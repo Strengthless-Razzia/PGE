@@ -14,7 +14,7 @@ def isRotationMatrix(R,rtol=1.e-06):
 def R_from_vect(vec):
     """
     Cree matrice coordonnees homogenes
-    input : vec (tx,ty,tz,rx,ry,rz)
+    input : vec (rx,ry,rz,tx,ty,tz)
     rx,ry,rz : vecteur autour duquel a tourne le repere (et angle = norme vecteur)
     output : matrice R3*3|T3*1
                      01*3|1
