@@ -207,7 +207,10 @@ class PNPResultVisualizationThread(QThread):
         #
         #self.image_points = np.squeeze(points_undistorded, axis=1)
         #
-        self.image_points = self.undistort(points[:,:2]).T
+        #self.image_points = self.undistort(points[:,:2]).T
+
+        self.image_points = points[:,:2].astype(np.float32)
+        #print(self.image_points.shape)
     
         self.draw_model()
         #print("Updated points :", points)
@@ -222,7 +225,7 @@ class PNPResultVisualizationThread(QThread):
 
         object_points = np.array(self.picked_lines_RO)
         image_points = self.image_points[:object_points.shape[0],:]
-
+        
         rotation_guess = np.array([-3.1, 0., 0.])
         translation_guess = np.array([0., 0., 1000.])
 
@@ -232,14 +235,12 @@ class PNPResultVisualizationThread(QThread):
         #self.extrinsic_mat_remi = np.ones((4, 4))
         #self.extrinsic_mat_remi[:3,3] = t_vec.T
 
-        success, rotation_vector, translation_vector, self.inliers = cv2.solvePnPRansac(
+        success, rotation_vector, translation_vector = cv2.solvePnP(
             object_points,
             image_points,
             self.intrinsic_mat,
             np.zeros((4,)),
-            rvec=rotation_guess,
-            tvec=translation_guess,
-            useExtrinsicGuess=True,
+            useExtrinsicGuess=False,
             flags=0)
         
         #print("Success :", success)
@@ -302,7 +303,7 @@ class PNPResultVisualizationThread(QThread):
     def draw_model(self):
         #print("Draw model")
         self.axes2D.cla()
-        self.axes2D.imshow(mpimg.imread("./Data/Plaque1/Cognex_LED/image2.bmp"))
+        self.axes2D.imshow(mpimg.imread("./HoleDetection/ShittyDataset/2.bmp"))
         if self.draw_model_pnp_result:
             transform_and_draw_model(self.model3D_Ro, self.intrinsic_mat, self.extrinsic_mat, self.axes2D)  # 3D model drawing
 
