@@ -3,7 +3,7 @@ import numpy as np
 from localisation_exception import UntrustworthyLocalisationError, MatchingError
 from hole_detection import hough
 from pnp_solving import process_pnp, calcule_erreur
-from matUtils import construct_matrix_from_vec
+from matUtils import R_from_vect
 from extractHoles import getAllCircles
 import sys
 from matchPoints import generatePointLines, removeNonSimilarLines, formatPointsForPnP
@@ -56,8 +56,8 @@ def main_localisation(  type_plaque,
 
     # S'assurer que les objects points image points sont de taille (n, 3) et (n, 2) avec n >= 4
 
-    print(readyForPnP_2D.shape)
-    print(readyForPnP_3D.shape)
+    #print(readyForPnP_2D.shape)
+    #print(readyForPnP_3D.shape)
 
     try:
         rotation_vector, translation_vector, inliers = process_pnp(readyForPnP_3D, readyForPnP_2D, matrice_intrinseque, coefficients_de_distortion)
@@ -66,15 +66,15 @@ def main_localisation(  type_plaque,
         print(e)
 
     try:
-        matrice_extrinseque = construct_matrix_from_vec(np.concatenate([rotation_vector, translation_vector]))
+        matrice_extrinseque = R_from_vect(np.concatenate([rotation_vector, translation_vector]))
 
     except Exception as e:
         print(e)
 
+    erreur = -1.
     try:
         erreur = calcule_erreur(readyForPnP_3D, readyForPnP_2D, inliers, matrice_extrinseque, matrice_intrinseque)
-        print(inliers)
-        print(erreur)
+        
     except Exception as e:
         print(e)
 
@@ -106,11 +106,11 @@ if __name__ == "__main__":
                                 [0.00000000e+00, 0.00000000e+00, 1.00000000e+00]])
 
 
-    main_localisation(
+    print(main_localisation(
         "Tole plate", 
         "Data/Plaque1/Model/Plaque_1.stp", 
         "HoleDetection/ShittyDataset/1.bmp", 
         None, 
         None, 
         intrinsic_mat, 
-        distortion_coefs)
+        distortion_coefs))

@@ -1,7 +1,7 @@
 import cv2
 
 p1 = 100
-p2 = 17
+p2 = 20
 blur = 5
 dp = 1
 minDist = 150
