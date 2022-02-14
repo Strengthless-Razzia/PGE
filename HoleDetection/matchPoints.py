@@ -344,7 +344,7 @@ def detectClosestEdge(imgPath, mark):
             foundLine = currentLine
             foundLineDistance = currentDistance     
     if foundLine is None:
-        print "not found"
+        print("not found")
         return None
     else:
         #displayUniqueLine(imgPath,foundLine,"LineFound")
@@ -411,7 +411,7 @@ def getLinesFromCloud(cloud, original):
     finishedLists.append(ogList)
 
     outValues = np.array(finishedLists)
-    print outValues.shape
+    print(outValues.shape)
     return outValues
 
  
@@ -475,14 +475,14 @@ def generatePointLines(imgPath,detectedPoints,plaqueModelPath):
     for i in range(len(newStuff)):
         print(linesFrom3D[i][0:2])
         displayPointCloudOnImg(imgPath, newStuff[i][0:2])
-        
-    return linesFrom3D,newStuff
+
+    return linesFrom3D, newStuff
 
 
-lines3D, lines2D = generatePointLines("HoleDetection\ShittyDataset\image3.bmp",  None, "Data\Plaque1\Model\Plaque_1.stp")
+lines3D, lines2D = generatePointLines("HoleDetection/ShittyDataset/image3.bmp",  None, "Data/Plaque1/Model/Plaque_1.stp")
 for i in range(len(lines2D)):
-    displayPointCloudOnImg("HoleDetection\ShittyDataset\image3.bmp",lines2D[i])
-    displayPointCloudOnImg("HoleDetection\ShittyDataset\image3.bmp",lines3D[i])
+    displayPointCloudOnImg("HoleDetection/ShittyDataset/image3.bmp",lines2D[i])
+    displayPointCloudOnImg("HoleDetection/ShittyDataset/image3.bmp",lines3D[i])
 
 #CRUDE MATCHING, on prends vraiment juste les lignes qui sont exactements similaires
 """
@@ -494,6 +494,6 @@ while i < (len(lines2D)):
     else:
         i+=1
 
-#displayPointCloudOnImg("HoleDetection\ShittyDataset\image3.bmp",lines2D[i])
-#displayPointCloudOnImg("HoleDetection\ShittyDataset\image3.bmp",lines3D[i])
+#displayPointCloudOnImg("HoleDetection/ShittyDataset/image3.bmp",lines2D[i])
+#displayPointCloudOnImg("HoleDetection/ShittyDataset/image3.bmp",lines3D[i])
 """
