@@ -350,13 +350,8 @@ def detectClosestEdge(image, mark):
         #displayUniqueLine(image,foundLine,"LineFound")
         return foundLine
 
-def getLinesToFind(plaqueModelPath):
-    with open(plaqueModelPath) as f:
-        file = f.readlines()
+def getLinesToFind(holeList):
 
-    holeList = extractHoles.getAllCircles(file)
-    holeList = np.delete(holeList,3,axis=1)
-    #holeList = np.delete(holeList,2,axis=1)
     
     sortedList = sortPoints(holeList, 1)
 
@@ -439,9 +434,9 @@ def separatePointsAndOthers(cloud): #When it's rotated, we take them out for eas
     newCloud = np.delete(newCloud,-1,axis=0)
     return newCloud, mark,[point1[0],point1[1],point2[0],point2[1] ]
 
-def generatePointLines(image, detectedPoints, plaqueModelPath):
+def generatePointLines(image, detectedPoints, holeList):
     #Trouver les lignes dans le modele 3d
-    linesFrom3D = getLinesToFind(plaqueModelPath)
+    linesFrom3D = getLinesToFind(holeList)
 
     #Chopper les trous 2D
     if detectedPoints is not None:
@@ -506,7 +501,12 @@ def formatPointsForPnP(lines2D,lines3D):
     return new2D,new3D
 
 if __name__=="__main__":
-    lines3D, lines2D = generatePointLines(cv.imread("HoleDetection/ShittyDataset/1.bmp"),  None, "Data/Plaque1/Model/Plaque_1.stp")
+    with open("Data/Plaque1/Model/Plaque_1.stp") as f:
+            file = f.readlines()
+    object_points = extractHoles.getAllCircles(file)
+    object_points = np.delete(object_points, 3, axis=1)
+
+    lines3D, lines2D = generatePointLines(cv.imread("HoleDetection/ShittyDataset/1.bmp"),  None, object_points)
 
     """Uncomment pour afficher les lignes 1 par 1 pour debug"""
     #for i in range(len(lines2D)):

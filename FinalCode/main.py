@@ -10,7 +10,7 @@ from matchPoints import generatePointLines, removeNonSimilarLines, formatPointsF
 
 def main_localisation(  type_plaque, 
                         chemin_modele, 
-                        chemin_image,
+                        image,
                         matrice_homogene_3D_outils,
                         matrice_passage_outils_cam,
                         matrice_intrinseque,
@@ -26,13 +26,9 @@ def main_localisation(  type_plaque,
     :coefficients_de_distortion:
     :return: [x, y, z, alpha, beta, gamma], matrice_extrinseque dans le repere monde OU None si la plaque n'est pas detectee"""
     
-    try:
-        photo =  cv2.imread(chemin_image)
     
-    except Exception as e:
-        print(e)
 
-    image_points = hough(photo)
+    image_points = hough(image)
 
 
     try:
@@ -47,8 +43,8 @@ def main_localisation(  type_plaque,
     #================================ Matching des points ================================
 
     try:
-        lines3D, lines2D = generatePointLines(chemin_image,  image_points, chemin_modele)
-        lines2D,lines3D = removeNonSimilarLines(lines2D,lines3D)
+        lines3D, lines2D = generatePointLines(image,  image_points, object_points)
+        lines2D,lines3D = removeNonSimilarLines(lines2D, lines3D)
         readyForPnP_2D, readyForPnP_3D = formatPointsForPnP(lines2D,lines3D)
 
     except Exception as e:
@@ -87,7 +83,7 @@ def main_localisation(  type_plaque,
 
     # ================================ Transformation dans le repere monde ================================
 
-    return translation_vector, rotation_vector, matrice_extrinseque
+    return translation_vector, rotation_vector, matrice_extrinseque, erreur
     
 
 
@@ -109,7 +105,7 @@ if __name__ == "__main__":
     print(main_localisation(
         "Tole plate", 
         "Data/Plaque1/Model/Plaque_1.stp", 
-        "HoleDetection/ShittyDataset/1.bmp", 
+        cv2.imread("HoleDetection/ShittyDataset/1.bmp"), 
         None, 
         None, 
         intrinsic_mat, 
