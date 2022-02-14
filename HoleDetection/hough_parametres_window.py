@@ -26,7 +26,7 @@ class App(QWidget):
         
         # create sliders
         self.p1_slider = CustomSlider(100., 1.0, 200., "p1")
-        self.p2_slider = CustomSlider(30., 1.0, 200., "p2")
+        self.p2_slider = CustomSlider(20., 1.0, 200., "p2")
 
         self.minR_slider = CustomSlider(0., 0., 100., "minR")
         self.maxR_slider = CustomSlider(100., 0., 100., "maxR")

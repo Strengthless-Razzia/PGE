@@ -1,7 +1,7 @@
 import numpy as np
 import cv2
 from localisation_exception import *
-from matUtils import construct_matrix_from_vec, transform_point_with_matrix, perspective_projection
+from matUtils import transform_point_with_matrix, perspective_projection
 
 def process_pnp(object_points, image_points, matrice_intrinseque, dist_coefs):
 
