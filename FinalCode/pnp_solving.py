@@ -29,7 +29,14 @@ def calcule_erreur(object_points, image_points, inliers, matrice_extrinseque, ma
         return -1.
     
 
-    #A MODIFIER SELECTIONNER QUE LES POINTS DES INLIERS
+    object_points_inliers = []
+    image_points_inliers = []
+    for inl in inliers:
+        object_points_inliers.append(object_points[inl[0]])
+        image_points_inliers.append(image_points[inl[0]])
+
+    object_points = np.array(object_points)
+    image_points = np.array(image_points)
 
 
     P_cam = transform_point_with_matrix(matrice_extrinseque, object_points)
