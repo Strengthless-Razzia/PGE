@@ -130,16 +130,16 @@ def sortPointsKeepOG(points, originals,sortAxis = 0):
         tempOriginals= np.delete(tempOriginals,foundIndex,axis=0)
     return sortedPoints, sortedOGPoints
 
-def hough(imgPath):
+def hough(image):
     p1 = 100
-    p2 = 17
+    p2 = 20
     blur = 5
     dp = 1
     minDist = 150
     
-    img = cv.imread(imgPath, cv.IMREAD_GRAYSCALE)
-    imgGray = cv.cvtColor(img, cv.COLOR_GRAY2BGR)
-    imgGray = cv.cvtColor(imgGray, cv.COLOR_BGR2GRAY)
+    img = image.copy()
+
+    imgGray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
 
     imgGray = cv.medianBlur(imgGray, blur)
 
@@ -151,8 +151,8 @@ def hough(imgPath):
 
     return circles[0,:,:2]
 
-def findMarkPosition(imgPath, debug = False):
-    im = cv.imread(imgPath, cv.IMREAD_GRAYSCALE)
+def findMarkPosition(image, debug = False):
+    im = image.copy()
     bordersize = 10
     im = cv.copyMakeBorder(
         im,
@@ -200,7 +200,7 @@ def findMarkPosition(imgPath, debug = False):
     else:
         return (0,0)
 
-def getHoughLines(img):
+def getHoughLines(image):
     """
     in :
         img : Path vers une image
@@ -211,7 +211,7 @@ def getHoughLines(img):
     """
     
     # Loads an image
-    src = cv.imread(img, cv.IMREAD_GRAYSCALE)
+    src = image.copy()
     # Check if image is loaded fine
     if src is None:
         print ('Error opening image!')
@@ -313,8 +313,8 @@ def getLineDistanceToMark(line,mark):
         return abs(mark[0]-line[0])
     return abs(mark[1] - a*mark[0] - b)/np.sqrt(1+a**2)
 
-def displayUniqueLine(imgPath,foundLine,title):
-    src = cv.imread(imgPath, cv.IMREAD_GRAYSCALE)
+def displayUniqueLine(image,foundLine,title):
+    src = image.copy()
     src = cv.cvtColor(src,cv.COLOR_GRAY2RGB)
     cv.line(src, (int(foundLine[0]), int(foundLine[1])), (int(foundLine[2]), int(foundLine[3])), (0,0,255), 5, cv.LINE_AA)
     cv.circle(src,getCenter(foundLine),5,(0,255,0))  
@@ -322,16 +322,16 @@ def displayUniqueLine(imgPath,foundLine,title):
     cv.imshow(title,src)
     cv.waitKey()
 
-def detectClosestEdge(imgPath, mark):
-    lines = getHoughLines(imgPath)
-    #displayImgWithLines(imgPath,lines,"Before Traitement")
+def detectClosestEdge(image, mark):
+    lines = getHoughLines(image)
+    #displayImgWithLines(image,lines,"Before Traitement")
     i = 0
     while i < len(lines):
         if not isMarkCloseby(lines[i], mark):
             lines = np.delete(lines,i,axis=0)
         else:
             i+=1
-    #displayImgWithLines(imgPath,lines,"afterwards")
+    #displayImgWithLines(image,lines,"afterwards")
     
     foundLineDistance = 9999999
     foundLine = None
@@ -347,7 +347,7 @@ def detectClosestEdge(imgPath, mark):
         print("not found")
         return None
     else:
-        #displayUniqueLine(imgPath,foundLine,"LineFound")
+        #displayUniqueLine(image,foundLine,"LineFound")
         return foundLine
 
 def getLinesToFind(plaqueModelPath):
@@ -417,8 +417,8 @@ def getLinesFromCloud(cloud, original):
     return outValues
 
 
-def displayPointCloudOnImg(imgPath, cloud):
-    plt.imshow(cv.imread(imgPath))
+def displayPointCloudOnImg(image, cloud):
+    plt.imshow(image)
     plt.scatter(cloud[:,0], cloud[:,1], c='b', marker='x', label='1')
     plt.show(block=False)
     plt.waitforbuttonpress()
@@ -439,7 +439,7 @@ def separatePointsAndOthers(cloud): #When it's rotated, we take them out for eas
     newCloud = np.delete(newCloud,-1,axis=0)
     return newCloud, mark,[point1[0],point1[1],point2[0],point2[1] ]
 
-def generatePointLines(imgPath, detectedPoints, plaqueModelPath):
+def generatePointLines(image, detectedPoints, plaqueModelPath):
     #Trouver les lignes dans le modele 3d
     linesFrom3D = getLinesToFind(plaqueModelPath)
 
@@ -447,10 +447,10 @@ def generatePointLines(imgPath, detectedPoints, plaqueModelPath):
     if detectedPoints is not None:
         originalPoints = detectedPoints
     else:
-        originalPoints = hough(imgPath)
+        originalPoints = hough(image)
     
-    mark = findMarkPosition(imgPath)
-    foundLine = detectClosestEdge(imgPath, mark)
+    mark = findMarkPosition(image)
+    foundLine = detectClosestEdge(image, mark)
     
 
     #On garde les originaux dans le coin pour la fin
@@ -506,7 +506,7 @@ def formatPointsForPnP(lines2D,lines3D):
     return new2D,new3D
 
 if __name__=="__main__":
-    lines3D, lines2D = generatePointLines("HoleDetection/ShittyDataset/1.bmp",  None, "Data/Plaque1/Model/Plaque_1.stp")
+    lines3D, lines2D = generatePointLines(cv.imread("HoleDetection/ShittyDataset/1.bmp"),  None, "Data/Plaque1/Model/Plaque_1.stp")
 
     """Uncomment pour afficher les lignes 1 par 1 pour debug"""
     #for i in range(len(lines2D)):
