@@ -69,9 +69,10 @@ if __name__ == '__main__':
         file = f.readlines()
 
     results = getAllCircles(file, getBothFaces=False) #getBothFaces si vous voulez aussi les points qui correspondent au dessous de la plaque, probablement useless mais sait-on jamais
-    #ONLY USE POINTS3D, DIAMETERS DONT WORK WOOPSIE
-    with open('HoleDetection/Points3D/Plaque3.npy', 'wb') as f:
-        np.save(f, results, allow_pickle=False)
+    print results.shape
+    
+    #with open('HoleDetection/Points3D/Plaque3.npy', 'wb') as f:
+    #    np.save(f, results, allow_pickle=False)
     #print "positions : ", points_3D.shape
     #print points_3D
     #print "diametres : ", diameters.shape
