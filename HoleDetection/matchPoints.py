@@ -474,7 +474,7 @@ def generatePointLines(imgPath,detectedPoints,plaqueModelPath):
         [workingPointSet,mark, foundLine] = separatePointsAndOthers(workingPointSet)
 
     newStuff=getLinesFromCloud(workingPointSet,originalPoints)
-  
+
     return linesFrom3D,newStuff
 
 
@@ -500,7 +500,7 @@ def formatPointsForPnP(lines2D,lines3D):
     return new2D,new3D
 
 if __name__=="__main__":
-    lines3D, lines2D = generatePointLines("HoleDetection\ShittyDataset\\1.bmp",  None, "Data\Plaque1\Model\Plaque_1.stp")
+    lines3D, lines2D = generatePointLines("HoleDetection/ShittyDataset/1.bmp",  None, "Data/Plaque1/Model/Plaque_1.stp")
 
     """Uncomment pour afficher les lignes 1 par 1 pour debug"""
     #for i in range(len(lines2D)):
@@ -508,6 +508,8 @@ if __name__=="__main__":
     #    displayPointCloudOnImg("HoleDetection\ShittyDataset\\1.bmp",lines3D[i])
 
     #CRUDE MATCHING, on prends vraiment juste les lignes qui font la meme taille
-    lines2D,lines3D=removeNonSimilarLines(lines2D,lines3D)
+    lines2D,lines3D = removeNonSimilarLines(lines2D,lines3D)
     readyForPnP_2D,readyForPnP_3D = formatPointsForPnP(lines2D,lines3D)
+
+    print(readyForPnP_2D.shape, readyForPnP_3D.shape)
     
