@@ -3,9 +3,8 @@ import numpy as np
 from localisation_exception import UntrustworthyLocalisationError, MatchingError
 from hole_detection import hough
 from pnp_solving import process_pnp, calcule_erreur
-from matUtils import R_from_vect
+from matUtils import R_from_vect, R_to_bryant
 from extractHoles import getAllCircles
-import sys
 from matchPoints import generatePointLines, removeNonSimilarLines, formatPointsForPnP
 
 def main_localisation(  type_plaque, 
@@ -26,23 +25,22 @@ def main_localisation(  type_plaque,
     :coefficients_de_distortion:
     :return: [x, y, z, alpha, beta, gamma], matrice_extrinseque dans le repere monde OU None si la plaque n'est pas detectee"""
     
-    #================================ Detection des trous ================================
+    # ================================ Detection des trous ================================
 
 
     image_points = hough(image)
 
-    #================================ Recuperation des positions des trous dans le repere de l'objet ================================
+    # ================================ Recuperation des positions des trous dans le repere de l'objet ================================
 
     try:
         with open(chemin_modele) as f:
             file = f.readlines()
         object_points = getAllCircles(file)
         object_points = np.delete(object_points, 3, axis=1)
-        
     except Exception as e:
         print(e)
     
-    #================================ Matching des points ================================
+    # ================================ Matching des points ================================
 
     try:
         lines3D, lines2D = generatePointLines(image,  image_points, object_points)
@@ -57,7 +55,7 @@ def main_localisation(  type_plaque,
     #print(readyForPnP_2D.shape)
     #print(readyForPnP_3D.shape)
 
-    #================================ Pnp ransac ================================
+    # ================================ Pnp ransac ================================
 
     try:
         rotation_vector, translation_vector, inliers = process_pnp(readyForPnP_3D, readyForPnP_2D, matrice_intrinseque, coefficients_de_distortion)
@@ -65,7 +63,7 @@ def main_localisation(  type_plaque,
     except Exception as e:
         print(e)
 
-    #================================ Construction de la matrice extrinseque ================================
+    # ================================ Construction de la matrice extrinseque ================================
 
     try:
         matrice_extrinseque = R_from_vect(np.concatenate([rotation_vector, translation_vector]))
@@ -75,7 +73,7 @@ def main_localisation(  type_plaque,
 
     erreur = -1.
 
-    #================================ Calcul de l'erreur ================================
+    # ================================ Calcul de l'erreur ================================
 
     try:
         erreur = calcule_erreur(readyForPnP_3D, readyForPnP_2D, inliers, matrice_extrinseque, matrice_intrinseque)
@@ -88,16 +86,27 @@ def main_localisation(  type_plaque,
 
     elif erreur > 3:
         raise UntrustworthyLocalisationError(erreur)
-    
 
     # ================================ Transformation dans le repere monde ================================
-
-
-    # A FAIRE
-
-    return translation_vector, rotation_vector, matrice_extrinseque
+	
+    
+    matrice_extrinseque[:3, 3] = matrice_extrinseque[:3, 3]/1000.
+    extrinseque_outils = np.dot(matrice_extrinseque , np.linalg.inv(matrice_passage_outils_cam))
+    extrinseque_monde = np.dot(extrinseque_outils, np.linalg.inv(matrice_homogene_3D_outils))
     
 
+    # ================================ Calcul des angles de Brillant ================================
+
+    try : 
+        bryant = R_to_bryant(extrinseque_monde[:3, :3])
+    except Exception as e:
+        print(e)
+
+    # A FAIRE
+    print("Erreur : " +  str(erreur))
+    return translation_vector, rotation_vector, extrinseque_monde, bryant
+    
+	
 
 
 if __name__ == "__main__":
