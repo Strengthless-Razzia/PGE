@@ -122,12 +122,14 @@ if __name__ == "__main__":
                                 [0.00000000e+00, 4.77222528e+03, 1.14533714e+03],
                                 [0.00000000e+00, 0.00000000e+00, 1.00000000e+00]])
 
+    M_pass_oc = np.eye(4)
+    Mtrix_hom_3D = np.eye(4)
 
     print(main_localisation(
         "Tole plate", 
         "Data/Plaque1/Model/Plaque_1.stp", 
         cv2.imread("HoleDetection/ShittyDataset/1.bmp"), 
-        None, 
-        None, 
+        Mtrix_hom_3D,
+        M_pass_oc, 
         intrinsic_mat, 
         distortion_coefs))
