@@ -235,17 +235,17 @@ class PNPResultVisualizationThread(QThread):
         #self.extrinsic_mat_remi = np.ones((4, 4))
         #self.extrinsic_mat_remi[:3,3] = t_vec.T
 
-        success, rotation_vector, translation_vector = cv2.solvePnP(
+        success, rotation_vector, translation_vector, self.inliers = cv2.solvePnPRansac(
             object_points,
             image_points,
             self.intrinsic_mat,
-            np.zeros((4,)),
+            self.distortion_coefs,
             useExtrinsicGuess=False,
             flags=0)
         
         #print("Success :", success)
 
-        self.extrinsic_mat = construct_matrix_from_vec(np.concatenate([rotation_vector, translation_vector]))
+        self.extrinsic_mat = R_from_vect(np.concatenate([rotation_vector, translation_vector]))
 
         #print("Extrinseque Remi \n", self.extrinsic_mat_remi)
         print("Rotation : " + str(rotation_vector))
@@ -303,7 +303,7 @@ class PNPResultVisualizationThread(QThread):
     def draw_model(self):
         #print("Draw model")
         self.axes2D.cla()
-        self.axes2D.imshow(mpimg.imread("./HoleDetection/ShittyDataset/2.bmp"))
+        self.axes2D.imshow(mpimg.imread("./HoleDetection/ShittyDataset/image4.bmp"))
         if self.draw_model_pnp_result:
             transform_and_draw_model(self.model3D_Ro, self.intrinsic_mat, self.extrinsic_mat, self.axes2D)  # 3D model drawing
 
