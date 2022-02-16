@@ -10,7 +10,7 @@ class HoughVisualizationThread(QThread):
     def __init__(self):
         super(HoughVisualizationThread,self).__init__()
         self._run_flag = True
-        self.original_image = cv2.imread("./HoleDetection/ShittyDataset/2.bmp")
+        self.original_image = cv2.imread("./HoleDetection/ShittyDataset/image4.bmp")
         self.p1 = 100
         self.p2 = 20
         self.blur = 5

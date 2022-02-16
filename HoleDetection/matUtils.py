@@ -1,35 +1,108 @@
 from matplotlib import projections
 import numpy as np
 from mpl_toolkits.mplot3d import Axes3D
+import cv2
+import numpy as np
+from numpy import isclose
+    
 
-def construct_matrix_from_vec(vec_solution):
-    a = vec_solution[0]
-    b = vec_solution[1]
-    g = vec_solution[2]
-    x = vec_solution[3]
-    y = vec_solution[4]
-    z = vec_solution[5]
+def isRotationMatrix(R,rtol=1.e-06):
+    assert(R.shape == (3,3)),"Rotation matrix must be 3x3"
+    assert(isclose(np.linalg.det(R),1,rtol=rtol)),"Rotation matrix must have it's determinant equal to 1"
+    assert np.isclose(np.linalg.inv(R),R.T,rtol).all(),"Rotation matrix must be orthogonal"   
+    
+def R_from_vect(vec):
+    """
+    Cree matrice coordonnees homogenes
+    input : vec (tx,ty,tz,rx,ry,rz)
+    rx,ry,rz : vecteur autour duquel a tourne le repere (et angle = norme vecteur)
+    output : matrice R3*3|T3*1
+                     01*3|1
+    """
+    #assert(vec.shape==(6L,1L))
+    
+    v1 = vec[0]
+    v2 = vec[1]
+    v3 = vec[2]
+    x = vec[3]
+    y = vec[4]
+    z = vec[5]
 
-    matPos = np.array([[1.0, 0.0, 0.0, 0.0],
-                       [0.0, 1.0, 0.0, 0.0],
-                       [0.0, 0.0, 1.0, 0.0],
-                       [0.0, 0.0, 0.0, 1.0]])
+    matPos = np.eye(4)
 
-    matPos[0, 0] = np.cos(g) * np.cos(b)
-    matPos[0, 1] = np.cos(g) * np.sin(b) * np.sin(a) - np.sin(g) * np.cos(a)
-    matPos[0, 2] = np.cos(g) * np.sin(b) * np.cos(a) + np.sin(g) * np.sin(a)
     matPos[0, 3] = x
-
-    matPos[1, 0] = np.sin(g) * np.cos(b)
-    matPos[1, 1] = np.sin(g) * np.sin(b) * np.sin(a) + np.cos(g) * np.cos(a)
-    matPos[1, 2] = np.sin(g) * np.sin(b) * np.cos(a) - np.cos(g) * np.sin(a)
     matPos[1, 3] = y
-
-    matPos[2, 0] = -np.sin(b)
-    matPos[2, 1] = np.cos(b) * np.sin(a)
-    matPos[2, 2] = np.cos(b) * np.cos(a)
     matPos[2, 3] = z
+    
+    matPos[0:3,0:3] = cv2.Rodrigues(np.array([[v1],[v2],[v3]]))[0]
+    isRotationMatrix(matPos[0:3,0:3])
     return matPos
+    
+def bryant_to_R(angle):
+    """
+    in : tuple of bryant angles (lambda,mu,nu) : (rot x,rot nouveau y,rot nouveau z)
+    output : rotation matrix
+    """
+    assert(type(angle)==type(())),"type tuple expected"
+    assert(len(angle)==3),"expected 3 angles"
+    r1 = angle[0]
+    r2 = angle[1]
+    r3 = angle[2]
+    s1=np.sin(r1)
+    c1=np.cos(r1)
+    s2=np.sin(r2)
+    c2=np.cos(r2)
+    s3=np.sin(r3)
+    c3=np.cos(r3)
+    R1 = np.array([ [1.,0.,0.],
+                    [0.,c1,-s1],
+                    [0.,s1,c1]])
+    R2 = np.array([ [c2,0.,s2],
+                    [0.,1.,0.],
+                    [-s2,0.,c2]])
+    R3 = np.array([ [c3,-s3,0.],
+                    [s3,c3,0.],
+                    [0.,0.,1.]])
+    R = np.dot(R1,np.dot(R2,R3))
+    isRotationMatrix(R)
+    return R
+    
+    
+def R_to_bryant(R):
+    """
+    transformation matrice rotation vers angles bryant
+    input : np array 3*3
+    output : tuple (lambda,mu,nu)
+    bryant :
+    1 : lambda = rotation autour de x d'un angle lambda
+    2 : mu = rotation autour du nouveau y d'un angle mu
+    3 : nu = rotation autour du nouveau z d'un angle nu
+    -pi<lambda<=pi
+    -pi/2<=mu<=pi/2
+    -pi<nu<=pi
+    """ 
+    isRotationMatrix(R)
+    
+    #A FIXER (valeurs numeriquement superieures a 1 ou inferieures a -1 parfois, arcsin plante...)
+    for i in range(3):
+        for j in range(3):
+            if(R[i:i+1,j:j+1] >1):
+                R[i:i+1,j:j+1] = 1.
+            if(R[i:i+1,j:j+1] <-1):
+                R[i:i+1,j:j+1] = -1.
+
+    isRotationMatrix(R)
+    #hakim
+    if (R[0:1,2:3]==1) or (R[0:1,2:3]==-1):
+        print("warning : R13 = +/-1, nu set to 0")
+        lamb = float(np.arctan2(R[1:2,0:1],R[1:2,1:2])/(R[0:1,2:3]))
+        mu = float(np.arcsin(R[0:1,2:3]))
+        nu = 0.
+    else:
+        lamb = float(-np.arctan2(R[1:2,2:3],R[2:3,2:3]))
+        mu = float(np.arcsin(R[0:1,2:3]))
+        nu = float(-np.arctan2(R[0:1,1:2],R[0:1,0:1]))
+    return(lamb,mu,nu)
 
 def transform_and_draw_model(edges_Ro, intrinsic, extrinsic, fig_axis):
     # ********************************************************************* #
@@ -84,6 +157,8 @@ def perspective_projection(intrinsic, P_c):
     
     Z = P_c[:,2]
     [u,v,tmp] = (1/Z) * np.dot(intrinsic, P_c.T)
+
+
 
     return u, v
 
