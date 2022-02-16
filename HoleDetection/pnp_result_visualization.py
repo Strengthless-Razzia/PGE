@@ -229,12 +229,6 @@ class PNPResultVisualizationThread(QThread):
         rotation_guess = np.array([-3.1, 0., 0.])
         translation_guess = np.array([0., 0., 1000.])
 
-        #rotation_matrix, t_vec = pnp(object_points, image_points, self.intrinsic_mat)
-
-        #self.extrinsic_mat_remi[:3,:3] = rotation_matrix
-        #self.extrinsic_mat_remi = np.ones((4, 4))
-        #self.extrinsic_mat_remi[:3,3] = t_vec.T
-
         success, rotation_vector, translation_vector, self.inliers = cv2.solvePnPRansac(
             object_points,
             image_points,
@@ -247,12 +241,27 @@ class PNPResultVisualizationThread(QThread):
 
         self.extrinsic_mat = R_from_vect(np.concatenate([rotation_vector, translation_vector]))
 
-        #print("Extrinseque Remi \n", self.extrinsic_mat_remi)
+        
         print("Rotation : " + str(rotation_vector))
         print("Translation : " + str(translation_vector))
         print("Extrinseque Opencv \n" +  str(self.extrinsic_mat))
+        matrice_extrinseque = self.extrinsic_mat.copy()
+        matrice_extrinseque[:3, 3] = matrice_extrinseque[:3, 3]/1000.
+        mat = np.array([[0.,  -1., 0.,  0.],
+                        [-1., 0.,  0.,  0.],
+                        [0.,  0.,  -1., 0.],
+                        [0.,  0.,  0.,  1.]])
 
-        #self.extrinsic_mat = self.extrinsic_mat_remi
+        mat_rot_pi_sur_2_z = np.array([ [0.,  -1., 0.,  0.],
+                                        [1.,  0.,  0.,  0.],
+                                        [0.,  0.,  1., 0.],
+                                        [0.,  0.,  0.,  1.]])
+
+        prod = np.dot(matrice_extrinseque, mat_rot_pi_sur_2_z)
+
+        
+        print("Extrinseque Reorientee \n" + str(prod))
+
         return success
 
     def calculate_error(self):
@@ -303,7 +312,7 @@ class PNPResultVisualizationThread(QThread):
     def draw_model(self):
         #print("Draw model")
         self.axes2D.cla()
-        self.axes2D.imshow(mpimg.imread("./HoleDetection/ShittyDataset/image4.bmp"))
+        self.axes2D.imshow(mpimg.imread("./Data/Plaque1/Cognex_LED/image_test.bmp"))
         if self.draw_model_pnp_result:
             transform_and_draw_model(self.model3D_Ro, self.intrinsic_mat, self.extrinsic_mat, self.axes2D)  # 3D model drawing
 
