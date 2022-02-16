@@ -4,7 +4,7 @@ from mpl_toolkits.mplot3d import Axes3D
 import cv2
 import numpy as np
 from numpy import isclose
-     
+    
 
 def isRotationMatrix(R,rtol=1.e-06):
     assert(R.shape == (3,3)),"Rotation matrix must be 3x3"
