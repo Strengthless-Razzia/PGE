@@ -114,6 +114,9 @@ def main_localisation(  type_plaque,
     #extrinseque_monde = np.dot(matrice_extrinseque, matrice_passage_outils_cam)
     extrinseque_monde = np.dot(matrice_homogene_3D_outils,matrice_passage_outils_cam)
     extrinseque_monde = np.dot(extrinseque_monde, matrice_extrinseque)
+    
+    
+    
     #print("extrinseque_pnp :\n{}\nmonde-outil :\n{}".format(matrice_extrinseque,matrice_homogene_3D_outils))
     
 
@@ -145,10 +148,10 @@ if __name__ == "__main__":
                                 [0.00000000e+00, 0.00000000e+00, 1.00000000e+00]])
 
         
-    a = main_localisation(
+    [translation_vector, rotation_vector, extrinseque_monde, bryant] = main_localisation(
         "Tole plate", 
         "Data/Plaque1/Model/Plaque_1.stp", 
-        cv2.imread("Data/img3.bmp"), 
+        cv2.imread("Data/imgBonSens.bmp"), 
         np.array([[ 1      ,  0.00070,  0.00134, 0.64479],
                   [ 0.00070,  -1.    , -0.00031, 0.31433],
                   [ 0.00134,  0.00032, -1.     , 1.07803],
@@ -160,4 +163,5 @@ if __name__ == "__main__":
         intrinsic_mat, 
         distortion_coefs)
     
-    print(a[2])
+    print extrinseque_monde
+    print bryant
