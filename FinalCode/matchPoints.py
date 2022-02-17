@@ -495,9 +495,19 @@ def removeNonSimilarLines(lines2D, lines3D):
 def formatPointsForPnP(lines2D,lines3D):
     new2D = np.empty((0,2))
     new3D = np.empty((0,3))
+
+    new2D = np.vstack([new2D,lines2D[0]])
+    new3D = np.vstack([new3D,lines3D[0]])
+    
     for i in range(len(lines2D)):
-        new2D = np.vstack([new2D,lines2D[i]])
-        new3D = np.vstack([new3D,lines3D[i]])
+        new2D = np.vstack([new2D,lines2D[i,0,:]])
+        new3D = np.vstack([new3D,lines3D[i,0,:]])
+    
+    #while len(new2D) >6:
+    #    pointToDelete = int(random() * len(new2D)-1)
+    #    new2D = np.delete(new2D,pointToDelete,axis=0)
+    #    new3D = np.delete(new3D,pointToDelete,axis=0) 
+
     return new2D,new3D
 
 if __name__=="__main__":
