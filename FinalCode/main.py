@@ -104,6 +104,7 @@ def main_localisation(  type_plaque,
                                         [0.,  0.,  1.,  0.],
                                         [0.,  0.,  0.,  1.]])
 
+
     extrinseque_monde = np.dot(np.dot(matrice_homogene_3D_outils, mat_rot_pi_sur_2_z), matrice_extrinseque)
     
 
