@@ -151,7 +151,7 @@ def hough(image):
 
     return circles[0,:,:2]
 
-def findMarkPosition(image, debug = False):
+def findMarkPosition(image, debug = True):
     im = image.copy()
     bordersize = 10
     im = cv.copyMakeBorder(
@@ -512,7 +512,7 @@ if __name__=="__main__":
     object_points = extractHoles.getAllCircles(file)
     object_points = np.delete(object_points, 3, axis=1)
 
-    lines3D, lines2D = generatePointLines(cv.imread("Data/imarchepo.bmp"),  None, object_points)
+    lines3D, lines2D = generatePointLines(cv.imread("Data/imgpo.bmp"),  None, object_points)
 
     """Uncomment pour afficher les lignes 1 par 1 pour debug"""
     for i in range(len(lines2D)):
