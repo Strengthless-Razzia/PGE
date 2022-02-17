@@ -81,7 +81,7 @@ def R_to_bryant(R):
     -pi/2<=mu<=pi/2
     -pi<nu<=pi
     """ 
-    isRotationMatrix(R)
+   # isRotationMatrix(R)
     
     #A FIXER (valeurs numeriquement superieures a 1 ou inferieures a -1 parfois, arcsin plante...)
     for i in range(3):
@@ -91,7 +91,7 @@ def R_to_bryant(R):
             if(R[i:i+1,j:j+1] <-1):
                 R[i:i+1,j:j+1] = -1.
 
-    isRotationMatrix(R)
+  #  isRotationMatrix(R)
     #hakim
     if (R[0:1,2:3]==1) or (R[0:1,2:3]==-1):
         print("warning : R13 = +/-1, nu set to 0")

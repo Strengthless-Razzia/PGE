@@ -52,7 +52,6 @@ def main_localisation(  type_plaque,
 
     except Exception as e:
         print("================= Matching error ===============")
-        #raise
         raise MatchingError(str(e))
 
     # S'assurer que les objects points image points sont de taille (n, 3) et (n, 2) avec n >= 4
@@ -66,6 +65,7 @@ def main_localisation(  type_plaque,
         rotation_vector, translation_vector, inliers = process_pnp(readyForPnP_3D, readyForPnP_2D, matrice_intrinseque, coefficients_de_distortion)
 
     except Exception as e:
+        print("================= PnP Error ===============")
         print(e)
 
     #================================ Construction de la matrice extrinseque ================================
@@ -74,6 +74,7 @@ def main_localisation(  type_plaque,
         matrice_extrinseque = R_from_vect(np.concatenate([rotation_vector, translation_vector]))
 
     except Exception as e:
+        print("================= reconstruct error ===============")
         print(e)
 
     erreur = -1.
@@ -84,12 +85,15 @@ def main_localisation(  type_plaque,
         erreur = calcule_erreur(readyForPnP_3D, readyForPnP_2D, inliers, matrice_extrinseque, matrice_intrinseque)
         
     except Exception as e:
+        print("================= Error on Error Calculation ===============")
         print(e)
 
     if erreur == -1.:
+        print("================= Error on Error Calculation ===============")
         return None
 
     elif erreur > 3:
+        print("================= Error too big ===============")
         raise UntrustworthyLocalisationError(erreur)
     
     
@@ -114,6 +118,7 @@ def main_localisation(  type_plaque,
     try : 
         bryant = R_to_bryant(extrinseque_monde[:3, :3])
     except Exception as e:
+        print("================= Bryant non reconstruit  ===============")
         print(e)
 
     print(erreur)
@@ -135,12 +140,20 @@ if __name__ == "__main__":
                                 [0.00000000e+00, 4.77222528e+03, 1.14533714e+03],
                                 [0.00000000e+00, 0.00000000e+00, 1.00000000e+00]])
 
-
-    print(main_localisation(
+        
+    a = main_localisation(
         "Tole plate", 
         "Data/Plaque1/Model/Plaque_1.stp", 
-        cv2.imread("HoleDetection/ShittyDataset/1.bmp"), 
-        None, 
-        None, 
+        cv2.imread("Data/img3.bmp"), 
+        np.array([[ 1      ,  0.00070,  0.00134, 0.64479],
+                  [ 0.00070,  -1.    , -0.00031, 0.31433],
+                  [ 0.00134,  0.00032, -1.     , 1.07803],
+                  [ 0.     ,  0.     ,  0.     , 1.     ]]), 
+        np.array([[ 0.,  -1.,  0., -0.035],
+                  [1.,  0.,  0., -0.035],
+                  [ 0.,  0.,  1., 0.05],
+                  [ 0.,   0.,  0.,1.]]), 
         intrinsic_mat, 
-        distortion_coefs))
+        distortion_coefs)
+    
+    print(a[2])

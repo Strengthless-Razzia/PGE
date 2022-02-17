@@ -98,7 +98,7 @@ def run_localisation(path,pub=None):
             pub_state(pub,"plaque non trouvée")
 	    print(e)
 
-	except MatchingError as e:
+    except MatchingError as e:
             pub_state(pub,"Erreur de matching")
 
         except UntrustworthyLocalisationError as e:
