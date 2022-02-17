@@ -418,6 +418,7 @@ def getLinesFromCloud(cloud, original):
 
 
 def displayPointCloudOnImg(image, cloud):
+    image = cv.imread(image)
     plt.imshow(image)
     plt.scatter(cloud[:,0], cloud[:,1], c='b', marker='x', label='1')
     plt.show(block=False)
@@ -511,12 +512,12 @@ if __name__=="__main__":
     object_points = extractHoles.getAllCircles(file)
     object_points = np.delete(object_points, 3, axis=1)
 
-    lines3D, lines2D = generatePointLines(cv.imread("HoleDetection/ShittyDataset/1.bmp"),  None, object_points)
+    lines3D, lines2D = generatePointLines(cv.imread("Data/imarchepo.bmp"),  None, object_points)
 
     """Uncomment pour afficher les lignes 1 par 1 pour debug"""
-    #for i in range(len(lines2D)):
-    #    displayPointCloudOnImg("HoleDetection\ShittyDataset\\1.bmp",lines2D[i])
-    #    displayPointCloudOnImg("HoleDetection\ShittyDataset\\1.bmp",lines3D[i])
+    for i in range(len(lines2D)):
+        displayPointCloudOnImg("Data/imgpo.bmp",lines2D[i])
+        displayPointCloudOnImg("Data/imgpo.bmp",lines3D[i])
 
     #CRUDE MATCHING, on prends vraiment juste les lignes qui font la meme taille
     lines2D,lines3D = removeNonSimilarLines(lines2D,lines3D)

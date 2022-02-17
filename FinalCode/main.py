@@ -133,7 +133,7 @@ if __name__ == "__main__":
     print(main_localisation(
         "Tole plate", 
         "Data/Plaque1/Model/Plaque_1.stp", 
-        cv2.imread("Data/Plaque1/Cognex_LED/2_image.bmp"), 
+        cv2.imread("Data/imarchepo.bmp"), 
         matrice_homogene_3D_outils, 
         None, 
         intrinsic_mat, 
