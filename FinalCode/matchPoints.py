@@ -151,7 +151,7 @@ def hough(image):
 
     return circles[0,:,:2]
 
-def findMarkPosition(image, debug = True):
+def findMarkPosition(image, debug = False):
     im = image.copy()
     bordersize = 10
     im = cv.copyMakeBorder(
@@ -172,12 +172,12 @@ def findMarkPosition(image, debug = True):
     params.minThreshold = 0
     params.maxThreshold = 10
     params.filterByArea = True
-    params.minArea = 2000
+    params.minArea = 200
     params.maxArea = 500000
 
     params.filterByCircularity = True
     params.minCircularity = 0.4
-    params.maxCircularity = 0.9
+    params.maxCircularity = 0.90
 
     params.filterByConvexity = False
     params.minConvexity = 0.87
@@ -337,12 +337,7 @@ def detectClosestEdge(image, mark):
     foundLine = None
 
     for currentLine in lines:
-
-        [cx, cy] = getCenter(currentLine)
-
-        currentDistance = ((((mark[0] - cx) ** 2) + ((mark[1] - cy) ** 2)) ** 0.5)
-
-        #currentDistance = getLineDistanceToMark(currentLine, mark)
+        currentDistance = getLineDistanceToMark(currentLine, mark)
 
 
         if currentDistance<foundLineDistance:
@@ -418,7 +413,6 @@ def getLinesFromCloud(cloud, original):
 
 
 def displayPointCloudOnImg(image, cloud):
-    image = cv.imread(image)
     plt.imshow(image)
     plt.scatter(cloud[:,0], cloud[:,1], c='b', marker='x', label='1')
     plt.show(block=False)
@@ -512,12 +506,12 @@ if __name__=="__main__":
     object_points = extractHoles.getAllCircles(file)
     object_points = np.delete(object_points, 3, axis=1)
 
-    lines3D, lines2D = generatePointLines(cv.imread("Data/imgpo.bmp"),  None, object_points)
+    lines3D, lines2D = generatePointLines(cv.imread("HoleDetection/ShittyDataset/1.bmp"),  None, object_points)
 
     """Uncomment pour afficher les lignes 1 par 1 pour debug"""
-    for i in range(len(lines2D)):
-        displayPointCloudOnImg("Data/imgpo.bmp",lines2D[i])
-        displayPointCloudOnImg("Data/imgpo.bmp",lines3D[i])
+    #for i in range(len(lines2D)):
+    #    displayPointCloudOnImg("HoleDetection\ShittyDataset\\1.bmp",lines2D[i])
+    #    displayPointCloudOnImg("HoleDetection\ShittyDataset\\1.bmp",lines3D[i])
 
     #CRUDE MATCHING, on prends vraiment juste les lignes qui font la meme taille
     lines2D,lines3D = removeNonSimilarLines(lines2D,lines3D)
