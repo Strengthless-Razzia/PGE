@@ -45,17 +45,13 @@ def main_localisation(  type_plaque,
     
     #================================ Matching des points ================================
 
-    #try:
-    lines3D, lines2D = generatePointLines(image,  image_points, object_points)
-    lines2D,lines3D = removeNonSimilarLines(lines2D, lines3D)
-    #for i in range(len(lines2D)):
-    #    lines2D[i] = np.delete(lines2D[i,:,:], i,axis=0)
-    #    lines3D[i] = np.delete(lines3D[i,:,:], i,axis=0)
-        
-    readyForPnP_2D, readyForPnP_3D = formatPointsForPnP(lines2D,lines3D)
-    #except Exception as e:
-    #    print("================= Matching error ===============")
-    #    raise MatchingError(str(e))
+    try:
+        lines3D, lines2D = generatePointLines(image,  image_points, object_points)
+        lines2D,lines3D = removeNonSimilarLines(lines2D, lines3D)
+        readyForPnP_2D, readyForPnP_3D = formatPointsForPnP(lines2D,lines3D)
+    except Exception as e:
+        print("================= Matching error ===============")
+        raise MatchingError(str(e))
 
     # S'assurer que les objects points image points sont de taille (n, 3) et (n, 2) avec n >= 4
 
@@ -66,7 +62,6 @@ def main_localisation(  type_plaque,
 
     try:
         rotation_vector, translation_vector, inliers = process_pnp(readyForPnP_3D, readyForPnP_2D, matrice_intrinseque, coefficients_de_distortion)
-        print(rotation_vector)
     
     except Exception as e:
         print("================= PnP Error ===============")
@@ -151,7 +146,7 @@ if __name__ == "__main__":
     [translation_vector, rotation_vector, extrinseque_monde, bryant] = main_localisation(
         "Tole plate", 
         "Data/Plaque1/Model/Plaque_1.stp", 
-        cv2.imread("Data/imgBonSens.bmp"), 
+        cv2.imread("Data/img3.bmp"), 
         np.array([[ 1      ,  0.00070,  0.00134, 0.64479],
                   [ 0.00070,  -1.    , -0.00031, 0.31433],
                   [ 0.00134,  0.00032, -1.     , 1.07803],
