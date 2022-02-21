@@ -1,3 +1,4 @@
+from distutils.log import error
 from PyQt5.QtCore import pyqtSignal, QThread
 from matplotlib import pyplot as plt
 import numpy as np
@@ -223,44 +224,44 @@ class PNPResultVisualizationThread(QThread):
             print("You have to pick at least 4 points")
             return False
 
-        object_points = np.array(self.picked_lines_RO)
+        object_points = np.array(self.picked_lines_RO, dtype=np.float64)
         image_points = self.image_points[:object_points.shape[0],:]
+        image_points = image_points.astype(np.float64)
         
         rotation_guess = np.array([-3.1, 0., 0.])
         translation_guess = np.array([0., 0., 1000.])
 
-        success, rotation_vector, translation_vector, self.inliers = cv2.solvePnPRansac(
+        """success, rotation_vector, translation_vector, self.inliers = cv2.solvePnPRansac(
             object_points,
             image_points,
             self.intrinsic_mat,
             self.distortion_coefs,
             useExtrinsicGuess=False,
-            flags=0)
+            flags=0)"""
+
+        success, rotation_vector_list, translation_vector_list, error_list = cv2.solvePnPGeneric(
+            object_points,
+            image_points,
+            self.intrinsic_mat,
+            self.distortion_coefs,
+            useExtrinsicGuess=False,
+            flags=cv2.SOLVEPNP_IPPE,
+            reprojectionError=0.0)
         
         #print("Success :", success)
 
-        self.extrinsic_mat = R_from_vect(np.concatenate([rotation_vector, translation_vector]))
+        for rotation_vector, translation_vector, error in zip(rotation_vector_list, translation_vector_list, error_list):
 
         
-        print("Rotation : " + str(rotation_vector))
-        print("Translation : " + str(translation_vector))
-        print("Extrinseque Opencv \n" +  str(self.extrinsic_mat))
-        matrice_extrinseque = self.extrinsic_mat.copy()
-        matrice_extrinseque[:3, 3] = matrice_extrinseque[:3, 3]/1000.
-        mat = np.array([[0.,  -1., 0.,  0.],
-                        [-1., 0.,  0.,  0.],
-                        [0.,  0.,  -1., 0.],
-                        [0.,  0.,  0.,  1.]])
+            print("Rotation : " + str(rotation_vector))
+            print("Translation : " + str(translation_vector))
 
-        mat_rot_pi_sur_2_z = np.array([ [0.,  -1., 0.,  0.],
-                                        [1.,  0.,  0.,  0.],
-                                        [0.,  0.,  1., 0.],
-                                        [0.,  0.,  0.,  1.]])
+            self.extrinsic_mat = R_from_vect(np.concatenate([rotation_vector, translation_vector]))
 
-        prod = np.dot(matrice_extrinseque, mat_rot_pi_sur_2_z)
-
+            print("Extrinseque Opencv \n" +  str(self.extrinsic_mat))
+            print('Error :' + str(error))
         
-        print("Extrinseque Reorientee \n" + str(prod))
+        self.extrinsic_mat = R_from_vect(np.concatenate([rotation_vector_list[0], translation_vector_list[0]]))
 
         return success
 
